@@ -1,117 +1,173 @@
-#import torch
-#from torchvision import datasets
+from torchvision import transforms, datasets
+from torch.utils import data
+from torchvision.datasets.utils import download_url
 import os
-
-def download_datasets(root_dir = '../data', MNIST=False,SVHN=Fasle):
-    if MNIST:
-        MNIST_dataset = datasets.MNIST(os.path.join(root_dir, 'MNIST'), train=True, transform=None, target_transform=None, download = true)
-    if SVHN:
-        SVHN_dataset = datasets.SVHN(os.path.join(root_dir, 'SVHN'), split='train', transform=None, target_transform=None, download = true)
+import zipfile
 
 
 
-def load_Office31():
-    transform = transforms.Compose([
-        transforms.RandomResizedCrop(224),
-        transforms.RandomHorizontalFlip(),
-        transforms.ToTensor(),
-        transforms.Normalize([0.5,0.5,0.5],[0.2,0.2,0.2])
+def _check_exists(self):
+    return os.path.exists(os.path.join(self.root, self.training_file)) and \
+           os.path.exists(os.path.join(self.root, self.test_file))
+
+def download_dataset(dataset_name, root_dir):
+    if os.path.exists(os.path.join(root_dir,dataset_name)):
+        print('Dataset already exisits. Delete the Dataset folder if you would like to redownload it !')
+        return
+
+    urls = {
+        'Digits2': 'http://statweb.stanford.edu/~tibs/ElemStatLearn/datasets/zip.train.gz'
+    }
+
+    file_name = urls[dataset_name].rpartition('/')[-1]
+    download_url(urls[dataset_name], root=root_dir)
+
+    z = zipfile.ZipFile('Digits.zip', 'r')
+    z.extractall(path=root_dir)
+
+def load_dataset(dataset_name, root_dir = '../data'):
+    if dataset_name not in ['Office-31','Office-Home','Digits']:
+        print('No this dataset')
+        return
+
+    root_dir = os.path.join(root_dir, dataset_name)
+    if not os.path.exists(root_dir):
+        os.mkdir(root_dir)
+        download_url(url, root=root_dir,filename=filename, md5=None)
+
+    if dataset_name == 'Digits':
+        return load_Digits(root_dir=root_dir)
+
+    if dataset_name == 'Office-31':
+        return load_Office31(root_dir=root_dir)
+
+    if dataset_name == 'Office-Home':
+        return load_OfficeHome(root_dir=root_dir)
+
+def load_Office31(root_dir):
+    Office31 = {}
+
+    train_transform = transforms.Compose([
+        transforms.Resize([224,224]),
+        transforms.ToTensor()
     ])
 
-    Office31 = torchvision.datasets.ImageFolder(
-        '../data/Office-31',
-        transform
-    )
+    test_transform = transforms.Compose([
+        transforms.Resize([224, 224]),
+        transforms.ToTensor()
+    ])
+
+    for domain_name in ['Amazon','Dslr','Webcam']:
+        Office31[domain_name] = {
+            'train': datasets.ImageFolder(root=os.path.join(root_dir, domain_name),transform = train_transform),
+            'test': datasets.ImageFolder(root=os.path.join(root_dir, domain_name),transform = test_transform)
+        }
 
     return Office31
 
+def load_OfficeHome(root_dir):
+    OfficeHome = {}
 
-
-
-def load_OfficeHome():
-    transform = transforms.Compose([
-        transforms.RandomResizedCrop(224),
-        transforms.RandomHorizontalFlip(),
-        transforms.ToTensor(),
-        transforms.Normalize([0.5,0.5,0.5],[0.2,0.2,0.2])
+    train_transform = transforms.Compose([
+        transforms.Resize([224, 224]),
+        transforms.ToTensor()
     ])
 
-    OfficeHome = torchvision.datasets.ImageFolder(
-        '../data/Office-Home',
-        transform
-    )
+    test_transform = transforms.Compose([
+        transforms.Resize([224, 224]),
+        transforms.ToTensor()
+    ])
+
+    for domain_name in ['Art', 'Clipart', 'Product','Real World']:
+        OfficeHome[domain_name] = {
+            'train': datasets.ImageFolder(root=os.path.join(root_dir, domain_name), transform=train_transform),
+            'test': datasets.ImageFolder(root=os.path.join(root_dir, domain_name), transform=test_transform)
+        }
 
     return OfficeHome
 
-def load_MNIST():
+def load_Digits(root_dir):
     MNIST = {'train':'','test':''}
 
-    train_transform = transforms.Compose([
-        transforms.RandomResizedCrop(224),
-        transforms.RandomHorizontalFlip(),
-        transforms.ToTensor(),
-        transforms.Normalize([0.5, 0.5, 0.5], [0.2, 0.2, 0.2])
-    ])
-    test_transform = transforms.Compose([
-        transforms.RandomResizedCrop(224),
-        transforms.RandomHorizontalFlip(),
-        transforms.ToTensor(),
-        transforms.Normalize([0.5, 0.5, 0.5], [0.2, 0.2, 0.2])
-    ])
+    train_transform = [
+        transforms.Resize([32, 32]),
+        transforms.ToTensor()
+    ]
 
-    MNIST['train'] = datasets.MNIST(os.path.join(root_dir, 'MNIST'), train=True, transform=train_transform, download=True)
-    MNIST['test'] = datasets.MNIST(os.path.join(root_dir, 'MNIST'), train=False, transform=test_transform, download=True)
+    test_transform = [
+        transforms.Resize([32,32]),
+        transforms.ToTensor()
+    ]
 
-    return MNIST
+    Digits = {}
 
-
-def load_SVHN():
-    SVHN = {'train': '', 'test': ''}
-
-    train_transform = transforms.Compose([
-        transforms.RandomResizedCrop(224),
-        transforms.RandomHorizontalFlip(),
-        transforms.ToTensor(),
-        transforms.Normalize([0.5, 0.5, 0.5], [0.2, 0.2, 0.2])
-    ])
-    test_transform = transforms.Compose([
-        transforms.RandomResizedCrop(224),
-        transforms.RandomHorizontalFlip(),
-        transforms.ToTensor(),
-        transforms.Normalize([0.5, 0.5, 0.5], [0.2, 0.2, 0.2])
-    ])
-
-    SVHN['train'] = datasets.SVHN(os.path.join(root_dir, 'SVHN'), train=True, transform=train_transform,download=True)
-    SVHN['test'] = datasets.SVHN(os.path.join(root_dir, 'SVHN'), train=False, transform=test_transform,download=True)
-
-    return SVHN
-
-def get_data_transforms():
-    data_transforms = {}
-    return data_transforms
-
-
-def load_datasets(data_transforms):
-    datasets = {
-        'MNIST':{'train','test'},
-        'SVHN':{'train','test'}
+    Digits['SVHN'] = {
+        'train': datasets.SVHN(
+            root=os.path.join(root_dir, 'SVHN'), split='train', download=True,
+            transform=transforms.Compose(train_transform)
+        ),
+        'test': datasets.SVHN(
+            root=os.path.join(root_dir, 'SVHN'), split='test', download=True,
+            transform=transforms.Compose(test_transform)
+        )
     }
-    datasets['MNIST'] = load_MNIST()
 
-    datasets['SVHN'] = load_SVHN()
+    train_transform.append(transforms.Lambda(lambda x: x.expand(3, -1, -1).clone()))
+    test_transform.append(transforms.Lambda(lambda x: x.expand(3, -1, -1).clone()))
+
+    Digits['MNIST'] = {
+        'train': datasets.MNIST(
+            root=os.path.join(root_dir, 'MNIST'),train=True,download = True,
+            transform=transforms.Compose(train_transform)
+        ),
+        'test': datasets.MNIST(
+            root=os.path.join(root_dir, 'MNIST'),train=False,download=True,
+            transform=transforms.Compose(test_transform)
+        )
+    }
+
+    Digits['USPS'] = {
+        'train': USPS(
+            root=os.path.join(root_dir, 'USPS'), split='train', download=True,
+            transform=transforms.Compose(train_transform)
+        ),
+        'test': USPS(
+            root=os.path.join(root_dir, 'USPS'), split='test', download=True,
+            transform=transforms.Compose(test_transform)
+        )
+    }
+
+    return Digits
 
 
-    a, b = torch.utils.data.random_split(dataset = , lengths = [3,7])
+def main():
 
-    datasets['Office-31'] = torchvision.datasets.ImageFolder(
-        os.path.join(root_dir, 'Office-31')
-    )
-    return datasets
+    dataset = load_dataset(root_dir='../data',dataset_name='Office-31')
+    for domain_name in dataset:
+        domain = dataset[domain_name]
+        data_loader = data.DataLoader(domain['train'], batch_size=4, shuffle=False, num_workers=0)
+        a, b = iter(data_loader).next()
+        print(domain_name)
+        print(a.size(), b.size())
+        print()
 
+    dataset = load_dataset(root_dir='../data', dataset_name='Office-Home')
+    for domain_name in dataset:
+        domain = dataset[domain_name]
+        data_loader = data.DataLoader(domain['train'], batch_size=4, shuffle=False, num_workers=0)
+        a, b = iter(data_loader).next()
+        print(domain_name)
+        print(a.size(), b.size())
+        print()
 
-def get_data_loaders(datasets, data_transforms):
-    data_loaders = datasets['SVHN']
+    dataset = load_dataset(root_dir='../data', dataset_name='Digits')
+    for domain_name in dataset:
+        domain = dataset[domain_name]
+        data_loader = data.DataLoader(domain['train'], batch_size=4, shuffle=False, num_workers=0)
+        a, b = iter(data_loader).next()
+        print(domain_name)
+        print(a.size(), b.size())
+        print()
 
-
-
-download_datasets(MNIST=True, SVHN=True)
+if __name__ == '__main__':
+    main()
