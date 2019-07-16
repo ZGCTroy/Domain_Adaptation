@@ -14,7 +14,7 @@ class USPSDataset(data.Dataset):
         'http://statweb.stanford.edu/~tibs/ElemStatLearn/datasets/zip.test.gz'
     ]
     training_file = 'zip.train.gz'
-    test_file = 'zip.train.gz'
+    test_file = 'zip.test.gz'
 
 
     def __init__(self, root, split='train', transform=None,
@@ -59,7 +59,7 @@ class USPSDataset(data.Dataset):
     def extract_images_labels(self, filename):
         import gzip
 
-        print('Extracting', filename)
+        #print('Extracting', filename)
         with gzip.open(filename, 'rb') as f:
             raw_data = f.read().split()
         data = np.asarray([raw_data[start:start + 257]

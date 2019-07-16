@@ -130,35 +130,15 @@ def load_MNIST(root_dir, image_size =[28,28], Gray_to_RGB = False):
 
 
 def main():
+    # MNIST train [60000,1,28,28] test [10000,1,28,28]
+    MNIST = load_MNIST(root_dir='./data/Digits/MNIST',image_size=[28,28])
 
-    # dataset = load_dataset(root_dir='../data',dataset_name='Office-31')
-    # for domain_name in dataset:
-    #     domain = dataset[domain_name]
-    #     data_loader = data.DataLoader(domain['train'], batch_size=4, shuffle=False, num_workers=0)
-    #     a, b = iter(data_loader).next()
-    #     print(domain_name)
-    #     print(a.size(), b.size())
-    #     print()
-    #
-    # dataset = load_dataset(root_dir='../data', dataset_name='Office-Home')
-    # for domain_name in dataset:
-    #     domain = dataset[domain_name]
-    #     data_loader = data.DataLoader(domain['train'], batch_size=4, shuffle=False, num_workers=0)
-    #     a, b = iter(data_loader).next()
-    #     print(domain_name)
-    #     print(a.size(), b.size())
-    #     print()
+    # USPS train [7291,1,16,16] test [2007,1,16,16]
+    USPS = load_USPS(root_dir='./data/Digits/USPS', image_size=[16, 16])
 
-    dataset = load_dataset(root_dir='./data', dataset_name='Digits')
-    for domain_name in dataset:
-        domain = dataset[domain_name]
-        data_loader = data.DataLoader(domain['train'], batch_size=4, shuffle=False, num_workers=0)
-        a, b = iter(data_loader).next()
-        print(domain_name)
-        print(a.size(), b.size())
-        print()
+    # SVHN train [73257,3,32,32] test [26032,3,32,32]
+    SVHN = load_SVHN(root_dir='./data/Digits/SVHN', image_size=[32,32])
+
 
 if __name__ == '__main__':
     main()
-    #download_dataset(dataset_name='Digits2',root_dir='./data/data')
-    

@@ -1,7 +1,8 @@
 import torch
 from torch import nn
+import torch.nn.functional as F
 
-# BaseLine network for "SVHN -> MNIST"
+# BaseLine network for "SVHN [3,32,32] -> MNIST [3,32,32]"
 class BaselineStoM(nn.Module):
     def __init__(self, n_classes):
         super(BaselineStoM, self).__init__()
@@ -54,11 +55,10 @@ class BaselineStoM(nn.Module):
         x = self.fc4(x)
         return x
 
-# BaseLine network for "MNIST <-> USPS"
+# BaseLine network for "MNIST [1,28,28] <-> USPS[1,28,28]"
 class BaselineMU(nn.Module):
     def __init__(self, n_classes):
         super(BaselineMU, self).__init__()
-
         self.conv1_1 = nn.Conv2d(1, 32, (5, 5))
         self.conv1_1_bn = nn.BatchNorm2d(32)
         self.pool1 = nn.MaxPool2d((2, 2))
@@ -75,7 +75,6 @@ class BaselineMU(nn.Module):
 
     def forward(self, x):
         x = self.pool1(F.relu(self.conv1_1_bn(self.conv1_1(x))))
-
         x = F.relu(self.conv2_1_bn(self.conv2_1(x)))
         x = self.pool2(F.relu(self.conv2_2_bn(self.conv2_2(x))))
         x = x.view(-1, 1024)
