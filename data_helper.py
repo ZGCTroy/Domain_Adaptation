@@ -3,37 +3,28 @@ from torch.utils import data
 from torchvision.datasets.utils import download_url
 import os
 import zipfile
+from datasets import USPSDataset
+from transform import define_specific_transform
+import os
+import gdown
+import requests
+import urllib
 
-
+os.chdir(os.getcwd())
 
 def _check_exists(self):
     return os.path.exists(os.path.join(self.root, self.training_file)) and \
            os.path.exists(os.path.join(self.root, self.test_file))
 
-def download_dataset(dataset_name, root_dir):
-    if os.path.exists(os.path.join(root_dir,dataset_name)):
-        print('Dataset already exisits. Delete the Dataset folder if you would like to redownload it !')
-        return
-
-    urls = {
-        'Digits2': 'http://statweb.stanford.edu/~tibs/ElemStatLearn/datasets/zip.train.gz'
-    }
-
-    file_name = urls[dataset_name].rpartition('/')[-1]
-    download_url(urls[dataset_name], root=root_dir)
-
-    z = zipfile.ZipFile('Digits.zip', 'r')
-    z.extractall(path=root_dir)
-
-def load_dataset(dataset_name, root_dir = '../data'):
+def load_dataset(dataset_name, root_dir = './data'):
     if dataset_name not in ['Office-31','Office-Home','Digits']:
         print('No this dataset')
         return
 
-    root_dir = os.path.join(root_dir, dataset_name)
     if not os.path.exists(root_dir):
-        os.mkdir(root_dir)
-        download_url(url, root=root_dir,filename=filename, md5=None)
+        download_dataset(root_dir=root_dir,dataset_name=dataset_name)
+
+    root_dir = os.path.join(root_dir, dataset_name)
 
     if dataset_name == 'Digits':
         return load_Digits(root_dir=root_dir)
@@ -87,80 +78,78 @@ def load_OfficeHome(root_dir):
     return OfficeHome
 
 def load_Digits(root_dir):
-    MNIST = {'train':'','test':''}
-
-    train_transform = [
-        transforms.Resize([32, 32]),
-        transforms.ToTensor()
-    ]
-
-    test_transform = [
-        transforms.Resize([32,32]),
-        transforms.ToTensor()
-    ]
-
-    Digits = {}
-
-    Digits['SVHN'] = {
-        'train': datasets.SVHN(
-            root=os.path.join(root_dir, 'SVHN'), split='train', download=True,
-            transform=transforms.Compose(train_transform)
-        ),
-        'test': datasets.SVHN(
-            root=os.path.join(root_dir, 'SVHN'), split='test', download=True,
-            transform=transforms.Compose(test_transform)
-        )
-    }
-
-    train_transform.append(transforms.Lambda(lambda x: x.expand(3, -1, -1).clone()))
-    test_transform.append(transforms.Lambda(lambda x: x.expand(3, -1, -1).clone()))
-
-    Digits['MNIST'] = {
-        'train': datasets.MNIST(
-            root=os.path.join(root_dir, 'MNIST'),train=True,download = True,
-            transform=transforms.Compose(train_transform)
-        ),
-        'test': datasets.MNIST(
-            root=os.path.join(root_dir, 'MNIST'),train=False,download=True,
-            transform=transforms.Compose(test_transform)
-        )
-    }
-
-    Digits['USPS'] = {
-        'train': USPS(
-            root=os.path.join(root_dir, 'USPS'), split='train', download=True,
-            transform=transforms.Compose(train_transform)
-        ),
-        'test': USPS(
-            root=os.path.join(root_dir, 'USPS'), split='test', download=True,
-            transform=transforms.Compose(test_transform)
-        )
+    Digits = {
+        'USPS': load_USPS(os.path.join(root_dir, 'USPS'), image_size=[16, 16], Gray_to_RGB=False),
+        'MNIST' : load_MNIST(os.path.join(root_dir,'MNIST'), image_size =[28,28], Gray_to_RGB = False),
+        'SVHN': load_SVHN(os.path.join(root_dir, 'SVHN'), image_size=[32, 32]),
     }
 
     return Digits
 
+def load_SVHN(root_dir, image_size =[32,32]):
+    transform = define_specific_transform(resize=image_size)
+    SVHN = {
+        'train': datasets.SVHN(
+            root=root_dir, split='train', download=True,
+            transform=transform['train']
+        ),
+        'test': datasets.SVHN(
+            root=root_dir, split='test', download=True,
+            transform=transform['test']
+        )
+    }
+    return SVHN
+
+def load_USPS(root_dir, image_size =[16,16], Gray_to_RGB = False):
+    transform = define_specific_transform(resize=image_size, Gray_to_RGB=Gray_to_RGB)
+    USPS = {
+        'train': USPSDataset(
+            root=root_dir, split='train', download=True,
+            transform=transform['train']
+        ),
+        'test': USPSDataset(
+            root=root_dir, split='test', download=True,
+            transform=transform['test']
+        )
+    }
+    return USPS
+
+def load_MNIST(root_dir, image_size =[28,28], Gray_to_RGB = False):
+    transform = define_specific_transform(resize=image_size, Gray_to_RGB=Gray_to_RGB)
+    MNIST = {
+        'train': datasets.MNIST(
+            root=root_dir, train=True, download=True,
+            transform=transform['train']
+        ),
+        'test': datasets.MNIST(
+            root=root_dir, train=False, download=True,
+            transform=transform['test']
+        )
+    }
+    return MNIST
+
 
 def main():
 
-    dataset = load_dataset(root_dir='../data',dataset_name='Office-31')
-    for domain_name in dataset:
-        domain = dataset[domain_name]
-        data_loader = data.DataLoader(domain['train'], batch_size=4, shuffle=False, num_workers=0)
-        a, b = iter(data_loader).next()
-        print(domain_name)
-        print(a.size(), b.size())
-        print()
+    # dataset = load_dataset(root_dir='../data',dataset_name='Office-31')
+    # for domain_name in dataset:
+    #     domain = dataset[domain_name]
+    #     data_loader = data.DataLoader(domain['train'], batch_size=4, shuffle=False, num_workers=0)
+    #     a, b = iter(data_loader).next()
+    #     print(domain_name)
+    #     print(a.size(), b.size())
+    #     print()
+    #
+    # dataset = load_dataset(root_dir='../data', dataset_name='Office-Home')
+    # for domain_name in dataset:
+    #     domain = dataset[domain_name]
+    #     data_loader = data.DataLoader(domain['train'], batch_size=4, shuffle=False, num_workers=0)
+    #     a, b = iter(data_loader).next()
+    #     print(domain_name)
+    #     print(a.size(), b.size())
+    #     print()
 
-    dataset = load_dataset(root_dir='../data', dataset_name='Office-Home')
-    for domain_name in dataset:
-        domain = dataset[domain_name]
-        data_loader = data.DataLoader(domain['train'], batch_size=4, shuffle=False, num_workers=0)
-        a, b = iter(data_loader).next()
-        print(domain_name)
-        print(a.size(), b.size())
-        print()
-
-    dataset = load_dataset(root_dir='../data', dataset_name='Digits')
+    dataset = load_dataset(root_dir='./data', dataset_name='Digits')
     for domain_name in dataset:
         domain = dataset[domain_name]
         data_loader = data.DataLoader(domain['train'], batch_size=4, shuffle=False, num_workers=0)
@@ -171,3 +160,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+    #download_dataset(dataset_name='Digits2',root_dir='./data/data')
+    

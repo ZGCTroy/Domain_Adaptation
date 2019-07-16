@@ -5,7 +5,7 @@ import os
 from PIL import Image
 
 
-class USPS(data.Dataset):
+class USPSDataset(data.Dataset):
     num_labels = 10
     image_shape = [16, 16, 1]
 
