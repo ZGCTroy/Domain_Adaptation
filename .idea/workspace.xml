@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="91495136-ac73-4129-9d6b-66ec0fda8f5b" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/data_helper.py" beforeDir="false" afterPath="$PROJECT_DIR$/data_helper.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/solvers/BaselineSolver.py" beforeDir="false" afterPath="$PROJECT_DIR$/solvers/BaselineSolver.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/transform.py" beforeDir="false" afterPath="$PROJECT_DIR$/transform.py" afterDir="false" />
@@ -19,7 +19,7 @@
     <SUITE FILE_PATH="coverage/Domain_Adaptation$hello.coverage" NAME="hello Coverage Results" MODIFIED="1563089859014" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Domain_Adaptation$Baseline.coverage" NAME="Baseline Coverage Results" MODIFIED="1563281496211" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Domain_Adaptation$baseline.coverage" NAME="baseline Coverage Results" MODIFIED="1563241032217" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/Domain_Adaptation$data_downloader.coverage" NAME="data_downloader Coverage Results" MODIFIED="1563343468828" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Domain_Adaptation$data_downloader.coverage" NAME="data_downloader Coverage Results" MODIFIED="1563365563062" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
@@ -35,23 +35,46 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/data_helper.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="982">
-              <caret line="174" column="32" selection-start-line="174" selection-start-column="32" selection-end-line="174" selection-end-column="32" />
+            <state relative-caret-position="485">
+              <caret line="198" lean-forward="true" selection-start-line="198" selection-end-line="198" />
               <folding>
                 <element signature="e#0#44#0" expanded="true" />
+                <element signature="e#338#477#0" />
+                <element signature="e#1112#1440#0" />
+                <element signature="e#1493#1817#0" />
+                <element signature="e#1358#1686#0" />
+                <element signature="e#3233#3555#0" />
+                <element signature="e#3611#3941#0" />
+                <element signature="e#3997#4326#0" />
+                <element signature="e#4385#4719#0" />
+                <element signature="e#3584#3953#0" />
+                <element signature="e#4026#4416#0" />
+                <element signature="e#4367#4792#0" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/README.md">
+          <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+            <state split_layout="SPLIT">
+              <first_editor>
+                <caret column="10" lean-forward="true" selection-start-column="10" selection-end-column="10" />
+              </first_editor>
+              <second_editor />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/solvers/BaselineSolver.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="242">
-              <caret line="77" column="44" selection-start-line="77" selection-start-column="44" selection-end-line="77" selection-end-column="44" />
+            <state relative-caret-position="854">
+              <caret line="342" selection-start-line="342" selection-end-line="342" />
               <folding>
                 <element signature="e#0#47#0" expanded="true" />
               </folding>
@@ -62,8 +85,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/transform.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="225">
-              <caret line="15" column="19" selection-start-line="15" selection-start-column="19" selection-end-line="15" selection-end-column="19" />
+            <state relative-caret-position="240">
+              <caret line="16" column="27" lean-forward="true" selection-start-line="16" selection-start-column="27" selection-end-line="16" selection-end-column="27" />
             </state>
           </provider>
         </entry>
@@ -101,10 +124,11 @@
         <option value="$PROJECT_DIR$/models/baseline.py" />
         <option value="$PROJECT_DIR$/train/Baseline.py" />
         <option value="$PROJECT_DIR$/solver/BaselineSolver.py" />
-        <option value="$PROJECT_DIR$/data_helper.py" />
         <option value="$PROJECT_DIR$/test.py" />
-        <option value="$PROJECT_DIR$/transform.py" />
         <option value="$PROJECT_DIR$/solvers/BaselineSolver.py" />
+        <option value="$PROJECT_DIR$/README.md" />
+        <option value="$PROJECT_DIR$/transform.py" />
+        <option value="$PROJECT_DIR$/data_helper.py" />
       </list>
     </option>
   </component>
@@ -126,6 +150,17 @@
             <path>
               <item name="Domain_Adaptation" type="b2602c69:ProjectViewProjectNode" />
               <item name="BaseLine" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="Domain_Adaptation" type="b2602c69:ProjectViewProjectNode" />
+              <item name="BaseLine" type="462c0819:PsiDirectoryNode" />
+              <item name="data" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="Domain_Adaptation" type="b2602c69:ProjectViewProjectNode" />
+              <item name="BaseLine" type="462c0819:PsiDirectoryNode" />
+              <item name="data" type="462c0819:PsiDirectoryNode" />
+              <item name="Office-Home" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="Domain_Adaptation" type="b2602c69:ProjectViewProjectNode" />
@@ -173,7 +208,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.BaselineSolver">
+  <component name="RunManager" selected="Python.data_downloader">
     <configuration name="Baseline" type="PythonConfigurationType" factoryName="Python" singleton="false" temporary="true">
       <module name="BaseLine" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -429,12 +464,12 @@
       <workItem from="1562920729027" duration="7248000" />
       <workItem from="1562998792384" duration="10557000" />
       <workItem from="1563089683458" duration="63348000" />
-      <workItem from="1563348589830" duration="3744000" />
+      <workItem from="1563348589830" duration="6793000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="89518000" />
+    <option name="totallyTimeSpent" value="92567000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -470,7 +505,7 @@
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="right" id="SciView" order="3" />
       <window_info anchor="right" id="Database" order="4" />
-      <window_info anchor="right" x="0" y="0" width="300" height="800" id="Documentation" order="5" side_tool="true" visible="true" weight="0.22039072" />
+      <window_info anchor="right" x="0" y="0" width="300" height="800" id="Documentation" order="5" side_tool="true" visible="true" weight="0.044566546" />
     </layout>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -730,23 +765,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/transform.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="225">
-          <caret line="15" column="19" selection-start-line="15" selection-start-column="19" selection-end-line="15" selection-end-column="19" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/data_helper.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="982">
-          <caret line="174" column="32" selection-start-line="174" selection-start-column="32" selection-end-line="174" selection-end-column="32" />
-          <folding>
-            <element signature="e#0#44#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/main.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-643">
@@ -774,12 +792,50 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/README.md">
+      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+        <state split_layout="SPLIT">
+          <first_editor>
+            <caret column="10" lean-forward="true" selection-start-column="10" selection-end-column="10" />
+          </first_editor>
+          <second_editor />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/transform.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="240">
+          <caret line="16" column="27" lean-forward="true" selection-start-line="16" selection-start-column="27" selection-end-line="16" selection-end-column="27" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/solvers/BaselineSolver.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="242">
-          <caret line="77" column="44" selection-start-line="77" selection-start-column="44" selection-end-line="77" selection-end-column="44" />
+        <state relative-caret-position="854">
+          <caret line="342" selection-start-line="342" selection-end-line="342" />
           <folding>
             <element signature="e#0#47#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/data_helper.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="485">
+          <caret line="198" lean-forward="true" selection-start-line="198" selection-end-line="198" />
+          <folding>
+            <element signature="e#0#44#0" expanded="true" />
+            <element signature="e#338#477#0" />
+            <element signature="e#1112#1440#0" />
+            <element signature="e#1493#1817#0" />
+            <element signature="e#1358#1686#0" />
+            <element signature="e#3233#3555#0" />
+            <element signature="e#3611#3941#0" />
+            <element signature="e#3997#4326#0" />
+            <element signature="e#4385#4719#0" />
+            <element signature="e#3584#3953#0" />
+            <element signature="e#4026#4416#0" />
+            <element signature="e#4367#4792#0" />
           </folding>
         </state>
       </provider>
