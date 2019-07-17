@@ -35,24 +35,54 @@ def load_dataset(dataset_name, root_dir = './data'):
     if dataset_name == 'Office-Home':
         return load_OfficeHome(root_dir=root_dir)
 
+def load_Amazon(root_dir, image_size=[224,224]):
+    transform = define_specific_transform(resize=image_size)
+    Amazon = {
+        'train': datasets.ImageFolder(
+            root=root_dir,
+            transform=transform['train']
+        ),
+        'test': datasets.ImageFolder(
+            root=root_dir,
+            transform=transform['test']
+        )
+    }
+    return Amazon
+
+def load_Dslr(root_dir, image_size=[224,224]):
+    transform = define_specific_transform(resize=image_size)
+    Dslr = {
+        'train': datasets.ImageFolder(
+            root=root_dir,
+            transform=transform['train']
+        ),
+        'test': datasets.ImageFolder(
+            root=root_dir,
+            transform=transform['test']
+        )
+    }
+    return Dslr
+
+def load_Webcam(root_dir, image_size=[224,224]):
+    transform = define_specific_transform(resize=image_size)
+    Webcam = {
+        'train': datasets.ImageFolder(
+            root=root_dir,
+            transform=transform['train']
+        ),
+        'test': datasets.ImageFolder(
+            root=root_dir,
+            transform=transform['test']
+        )
+    }
+    return Webcam
+
 def load_Office31(root_dir):
-    Office31 = {}
-
-    train_transform = transforms.Compose([
-        transforms.Resize([224,224]),
-        transforms.ToTensor()
-    ])
-
-    test_transform = transforms.Compose([
-        transforms.Resize([224, 224]),
-        transforms.ToTensor()
-    ])
-
-    for domain_name in ['Amazon','Dslr','Webcam']:
-        Office31[domain_name] = {
-            'train': datasets.ImageFolder(root=os.path.join(root_dir, domain_name),transform = train_transform),
-            'test': datasets.ImageFolder(root=os.path.join(root_dir, domain_name),transform = test_transform)
-        }
+    Office31 = {
+        'Amazon' : load_Amazon(os.path.join(root_dir,'Amazon'),image_size=[224,224]),
+        'Dslr': load_Dslr(os.path.join(root_dir, 'Amazon'), image_size=[224, 224]),
+        'Webcam': load_Webcam(os.path.join(root_dir, 'Amazon'), image_size=[224, 224]),
+    }
 
     return Office31
 
@@ -130,14 +160,32 @@ def load_MNIST(root_dir, image_size =[28,28], Gray_to_RGB = False):
 
 
 def main():
-    # MNIST train [60000,1,28,28] test [10000,1,28,28]
-    MNIST = load_MNIST(root_dir='./data/Digits/MNIST',image_size=[28,28])
+    # # MNIST train [60000,1,28,28] test [10000,1,28,28]
+    # MNIST = load_MNIST(root_dir='./data/Digits/MNIST',image_size=[28,28])
+    #
+    # # USPS train [7291,1,16,16] test [2007,1,16,16]
+    # USPS = load_USPS(root_dir='./data/Digits/USPS', image_size=[16, 16])
+    #
+    # # SVHN train [73257,3,32,32] test [26032,3,32,32]
+    # SVHN = load_SVHN(root_dir='./data/Digits/SVHN', image_size=[32,32])
+    #
+    # # Office-31 train [73257,3,32,32] test [26032,3,32,32]
+    # SVHN = load_SVHN(root_dir='./data/Digits/SVHN', image_size=[32, 32])
 
-    # USPS train [7291,1,16,16] test [2007,1,16,16]
-    USPS = load_USPS(root_dir='./data/Digits/USPS', image_size=[16, 16])
+    root_dir = './data/Office-31'
+    # Office-31 31 classes , Amazon
+    Amazon = load_Amazon(os.path.join(root_dir, 'Amazon'), image_size=[224, 224])
+    print(Amazon)
 
-    # SVHN train [73257,3,32,32] test [26032,3,32,32]
-    SVHN = load_SVHN(root_dir='./data/Digits/SVHN', image_size=[32,32])
+    # Office-31 31 classes , Dslr
+    Dslr = load_Dslr(os.path.join(root_dir, 'Dslr'), image_size=[224, 224])
+    print(Dslr)
+
+    # Office-31 31 classes , Webcam
+    Webcam = load_Webcam(os.path.join(root_dir, 'Webcam'), image_size=[224, 224])
+    print(Webcam)
+
+
 
 
 if __name__ == '__main__':

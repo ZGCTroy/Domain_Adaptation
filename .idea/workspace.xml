@@ -2,13 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="91495136-ac73-4129-9d6b-66ec0fda8f5b" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/solver/BaselineSolver.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/train/Baseline.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/data_helper.py" beforeDir="false" afterPath="$PROJECT_DIR$/data_helper.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/datasets.py" beforeDir="false" afterPath="$PROJECT_DIR$/datasets.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/baseline.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/baseline.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/solvers/BaselineSolver.py" beforeDir="false" afterPath="$PROJECT_DIR$/solvers/BaselineSolver.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/transform.py" beforeDir="false" afterPath="$PROJECT_DIR$/transform.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -17,99 +15,23 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="CoverageDataManager">
-    <SUITE FILE_PATH="coverage/Domain_Adaptation$BaselineSolver.coverage" NAME="BaselineSolver Coverage Results" MODIFIED="1563283914183" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/solver" />
+    <SUITE FILE_PATH="coverage/Domain_Adaptation$BaselineSolver.coverage" NAME="BaselineSolver Coverage Results" MODIFIED="1563343302018" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Domain_Adaptation$baseline__1_.coverage" NAME="baseline (1) Coverage Results" MODIFIED="1563190831478" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Domain_Adaptation$hello.coverage" NAME="hello Coverage Results" MODIFIED="1563089859014" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Domain_Adaptation$Baseline.coverage" NAME="Baseline Coverage Results" MODIFIED="1563281496211" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Domain_Adaptation$baseline.coverage" NAME="baseline Coverage Results" MODIFIED="1563241032217" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/Domain_Adaptation$data_downloader.coverage" NAME="data_downloader Coverage Results" MODIFIED="1563259605024" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Domain_Adaptation$data_downloader.coverage" NAME="data_downloader Coverage Results" MODIFIED="1563343468828" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/models/baseline.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1043">
-              <caret line="79" column="23" selection-start-line="79" selection-start-column="23" selection-end-line="79" selection-end-column="23" />
-              <folding>
-                <element signature="e#0#12#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/test.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="291">
-              <caret line="102" column="35" selection-start-line="102" selection-start-column="35" selection-end-line="102" selection-end-column="35" />
-              <folding>
-                <element signature="e#0#47#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/data_helper.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="368">
-              <caret line="136" column="59" selection-start-line="136" selection-start-column="59" selection-end-line="136" selection-end-column="59" />
-              <folding>
-                <element signature="e#0#44#0" expanded="true" />
-                <element signature="e#183#322#0" />
-                <element signature="e#1022#1563#0" />
-                <element signature="e#1487#2078#0" />
-                <element signature="e#2115#2727#0" />
-                <element signature="e#2833#3443#0" />
-                <element signature="e#4010#4378#0" />
-                <element signature="e#4447#4926#0" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/train/Baseline.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="246">
-              <caret line="117" column="50" selection-start-line="117" selection-start-column="50" selection-end-line="117" selection-end-column="50" />
-              <folding>
-                <element signature="e#0#47#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/solver/BaselineSolver.py">
+        <entry file="file://$PROJECT_DIR$/solvers/BaselineSolver.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="81">
-              <caret line="70" column="45" lean-forward="true" selection-start-line="70" selection-start-column="45" selection-end-line="70" selection-end-column="45" />
+            <state relative-caret-position="3973">
+              <caret line="297" column="1" selection-start-line="297" selection-start-column="1" selection-end-line="297" selection-end-column="1" />
               <folding>
                 <element signature="e#0#47#0" expanded="true" />
-                <element signature="e#730#1249#0" />
-                <element signature="e#2514#3627#0" />
-                <element signature="e#3628#4617#0" />
               </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$USER_HOME$/Library/Caches/PyCharm2018.3/remote_sources/91970271/-1382175924/torch/utils/data/dataloader.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="66">
-              <caret line="151" column="37" selection-start-line="151" selection-start-column="37" selection-end-line="151" selection-end-column="37" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$USER_HOME$/Library/Caches/PyCharm2018.3/remote_sources/91970271/-1382175924/torch/optim/lr_scheduler.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="202">
-              <caret line="154" selection-start-line="154" selection-end-line="154" />
             </state>
           </provider>
         </entry>
@@ -143,19 +65,21 @@
         <option value="$PROJECT_DIR$/.gitignore" />
         <option value="$PROJECT_DIR$/baseline.py" />
         <option value="$PROJECT_DIR$/hello.py" />
-        <option value="$PROJECT_DIR$/transform.py" />
         <option value="$PROJECT_DIR$/datasets.py" />
-        <option value="$PROJECT_DIR$/data_helper.py" />
-        <option value="$PROJECT_DIR$/test.py" />
         <option value="$PROJECT_DIR$/models/baseline.py" />
         <option value="$PROJECT_DIR$/train/Baseline.py" />
         <option value="$PROJECT_DIR$/solver/BaselineSolver.py" />
+        <option value="$PROJECT_DIR$/data_helper.py" />
+        <option value="$PROJECT_DIR$/transform.py" />
+        <option value="$PROJECT_DIR$/test.py" />
+        <option value="$PROJECT_DIR$/solvers/BaselineSolver.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds" fullScreen="true">
-    <option name="width" value="1680" />
-    <option name="height" value="1050" />
+    <option name="y" value="23" />
+    <option name="width" value="1485" />
+    <option name="height" value="1417" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -163,6 +87,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -173,39 +98,12 @@
             <path>
               <item name="Domain_Adaptation" type="b2602c69:ProjectViewProjectNode" />
               <item name="BaseLine" type="462c0819:PsiDirectoryNode" />
-              <item name="data" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="Domain_Adaptation" type="b2602c69:ProjectViewProjectNode" />
-              <item name="BaseLine" type="462c0819:PsiDirectoryNode" />
-              <item name="data" type="462c0819:PsiDirectoryNode" />
-              <item name="Digits" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="Domain_Adaptation" type="b2602c69:ProjectViewProjectNode" />
-              <item name="BaseLine" type="462c0819:PsiDirectoryNode" />
-              <item name="data" type="462c0819:PsiDirectoryNode" />
-              <item name="Digits" type="462c0819:PsiDirectoryNode" />
-              <item name="MNIST" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="Domain_Adaptation" type="b2602c69:ProjectViewProjectNode" />
-              <item name="BaseLine" type="462c0819:PsiDirectoryNode" />
-              <item name="data" type="462c0819:PsiDirectoryNode" />
-              <item name="Digits" type="462c0819:PsiDirectoryNode" />
-              <item name="MNIST" type="462c0819:PsiDirectoryNode" />
-              <item name="MNIST" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="Domain_Adaptation" type="b2602c69:ProjectViewProjectNode" />
-              <item name="BaseLine" type="462c0819:PsiDirectoryNode" />
-              <item name="solver" type="462c0819:PsiDirectoryNode" />
+              <item name="solvers" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -243,11 +141,14 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.BaselineSolver">
+  <component name="RunManager" selected="Python.data_downloader">
     <configuration name="Baseline" type="PythonConfigurationType" factoryName="Python" singleton="false" temporary="true">
       <module name="BaseLine" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="IS_MODULE_SDK" value="true" />
@@ -291,12 +192,15 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="BaselineSolver" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="BaselineSolver" type="PythonConfigurationType" factoryName="Python" singleton="false" temporary="true">
       <module name="BaseLine" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/solver" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
@@ -329,7 +233,7 @@
         </option>
       </EXTENSION>
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/solver/BaselineSolver.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/solvers/BaselineSolver.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -364,6 +268,9 @@
       <module name="BaseLine" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$USER_HOME$/Library/Caches/PyCharm2018.3/remote_sources/91970271/-1382175924/requests" />
       <option name="IS_MODULE_SDK" value="true" />
@@ -411,6 +318,9 @@
       <module name="BaseLine" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="IS_MODULE_SDK" value="true" />
@@ -454,20 +364,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="Docker Image" type="docker-deploy" factoryName="docker-image" temporary="true" server-name="Docker">
-      <deployment type="docker-image">
-        <settings>
-          <option name="command" value="" />
-          <option name="containerName" value="" />
-          <option name="entrypoint" value="" />
-          <option name="imageTag" value="pytorch/pytorch:latest" />
-          <option name="commandLineOptions" value="" />
-        </settings>
-      </deployment>
-      <method v="2" />
-    </configuration>
     <list>
-      <item itemvalue="Docker.Docker Image" />
       <item itemvalue="Python.data_downloader" />
       <item itemvalue="Python.baseline" />
       <item itemvalue="Python.adapters" />
@@ -480,7 +377,6 @@
         <item itemvalue="Python.Baseline" />
         <item itemvalue="Python.adapters" />
         <item itemvalue="Python.baseline" />
-        <item itemvalue="Python.data_downloader" />
       </list>
     </recent_temporary>
   </component>
@@ -500,12 +396,13 @@
       <workItem from="1562920000234" duration="574000" />
       <workItem from="1562920729027" duration="7248000" />
       <workItem from="1562998792384" duration="10557000" />
-      <workItem from="1563089683458" duration="58627000" />
+      <workItem from="1563089683458" duration="63348000" />
+      <workItem from="1563348589830" duration="441000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="81053000" />
+    <option name="totallyTimeSpent" value="86215000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -520,12 +417,12 @@
     <frame x="0" y="0" width="1680" height="1050" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.15201466" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.15384616" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32959184" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.33367348" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.32244897" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -536,12 +433,12 @@
       <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
       <window_info anchor="bottom" id="Terminal" order="11" weight="0.36938775" />
       <window_info anchor="bottom" id="Python Console" order="12" weight="0.32857144" />
-      <window_info anchor="right" x="0" y="0" width="300" height="800" id="Documentation" side_tool="true" visible="true" weight="0.22039072" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="right" id="SciView" order="3" />
       <window_info anchor="right" id="Database" order="4" />
+      <window_info anchor="right" x="0" y="0" width="300" height="800" id="Documentation" order="5" side_tool="true" visible="true" weight="0.22039072" />
     </layout>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -559,11 +456,7 @@
     <entry file="file://$PROJECT_DIR$/pictures/Office-Home.png">
       <provider selected="true" editor-type-id="images" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/data/MNIST/MNIST/processed/training.pt">
-      <provider selected="true" editor-type-id="LargeFileEditor">
-        <state relative-caret-position="-2372" />
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/data/MNIST/MNIST/processed/training.pt" />
     <entry file="file://$USER_HOME$/Library/Caches/PyCharm2018.3/remote_sources/2129289089/-1382175924/torch/utils/data/dataset.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-1052">
@@ -571,13 +464,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/data/MNIST/MNIST/processed/test.pt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="30">
-          <caret line="2" column="20" selection-start-line="2" selection-start-column="20" selection-end-line="2" selection-end-column="20" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/data/MNIST/MNIST/processed/test.pt" />
     <entry file="file://$USER_HOME$/Library/Caches/PyCharm2018.3/remote_sources/2129289089/-1382175924/torchvision/datasets/vision.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="900">
@@ -687,13 +574,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/transform.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="30">
-          <caret line="2" column="36" selection-start-line="2" selection-start-column="36" selection-end-line="2" selection-end-column="36" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/Library/Caches/PyCharm2018.3/remote_sources/91970271/-1382175924/gdown/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="30">
@@ -753,43 +633,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/datasets.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="393">
-          <caret line="61" column="9" selection-start-line="61" selection-start-column="9" selection-end-line="61" selection-end-column="9" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="291">
-          <caret line="102" column="35" selection-start-line="102" selection-start-column="35" selection-end-line="102" selection-end-column="35" />
-          <folding>
-            <element signature="e#0#47#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/data_helper.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="368">
-          <caret line="136" column="59" selection-start-line="136" selection-start-column="59" selection-end-line="136" selection-end-column="59" />
-          <folding>
-            <element signature="e#0#44#0" expanded="true" />
-            <element signature="e#183#322#0" />
-            <element signature="e#1022#1563#0" />
-            <element signature="e#1487#2078#0" />
-            <element signature="e#2115#2727#0" />
-            <element signature="e#2833#3443#0" />
-            <element signature="e#4010#4378#0" />
-            <element signature="e#4447#4926#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/Library/Caches/PyCharm2018.3/remote_sources/91970271/-1382175924/torch/nn/modules/loss.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="209">
@@ -811,16 +654,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/train/Baseline.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="246">
-          <caret line="117" column="50" selection-start-line="117" selection-start-column="50" selection-end-line="117" selection-end-column="50" />
-          <folding>
-            <element signature="e#0#47#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/Library/Caches/PyCharm2018.3/remote_sources/91970271/-1382175924/torch/optim/lr_scheduler.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="202">
@@ -835,25 +668,88 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/datasets.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="825">
+          <caret line="55" column="28" selection-start-line="55" selection-start-column="28" selection-end-line="55" selection-end-column="28" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/train/Baseline.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1668">
+          <caret line="117" column="50" selection-start-line="117" selection-start-column="50" selection-end-line="117" selection-end-column="50" />
+          <folding>
+            <element signature="e#0#47#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/Library/Caches/PyCharm2018.3/remote_sources/91970271/-1382175924/torchvision/transforms/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret column="11" lean-forward="true" selection-start-column="11" selection-end-column="11" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/Library/Caches/PyCharm2018.3/remote_sources/91970271/-1382175924/torchvision/transforms/transforms.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-44">
+          <folding>
+            <element signature="e#0#31#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/transform.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="405">
+          <caret line="27" selection-start-line="27" selection-end-line="27" />
+          <folding>
+            <element signature="e#0#34#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/data_helper.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="32">
+          <caret line="116" column="17" selection-start-line="116" selection-start-column="17" selection-end-line="116" selection-end-column="17" />
+          <folding>
+            <element signature="e#0#44#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="593">
+          <caret line="58" lean-forward="true" selection-start-line="58" selection-end-line="58" />
+          <folding>
+            <element signature="e#0#47#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/models/baseline.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1043">
-          <caret line="79" column="23" selection-start-line="79" selection-start-column="23" selection-end-line="79" selection-end-column="23" />
+        <state relative-caret-position="510">
+          <caret line="34" column="44" selection-start-line="34" selection-start-column="44" selection-end-line="34" selection-end-column="44" />
           <folding>
             <element signature="e#0#12#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/solver/BaselineSolver.py">
+    <entry file="file://$PROJECT_DIR$/solvers/BaselineSolver.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="81">
-          <caret line="70" column="45" lean-forward="true" selection-start-line="70" selection-start-column="45" selection-end-line="70" selection-end-column="45" />
+        <state relative-caret-position="3973">
+          <caret line="297" column="1" selection-start-line="297" selection-start-column="1" selection-end-line="297" selection-end-column="1" />
           <folding>
             <element signature="e#0#47#0" expanded="true" />
-            <element signature="e#730#1249#0" />
-            <element signature="e#2514#3627#0" />
-            <element signature="e#3628#4617#0" />
           </folding>
         </state>
       </provider>

@@ -12,6 +12,7 @@ def define_specific_transform(resize, Gray_to_RGB=False):
 
     for type in transform:
         transform[type].append(transforms.ToTensor())
+        transform[type].append(transforms.)
 
     if Gray_to_RGB:
         for type in transform:
@@ -19,7 +20,5 @@ def define_specific_transform(resize, Gray_to_RGB=False):
 
     for type in transform:
         transform[type] = transforms.Compose(transform[type])
-
-
 
     return transform
