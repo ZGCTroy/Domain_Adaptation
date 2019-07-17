@@ -10,15 +10,14 @@ def define_specific_transform(resize, Gray_to_RGB=False):
         ]
     }
 
-    for type in transform:
-        transform[type].append(transforms.ToTensor())
-        transform[type].append(transforms)
+    for _ in transform:
+        transform[_].append(transforms.ToTensor())
 
     if Gray_to_RGB:
-        for type in transform:
-            transform[type].append(transforms.Lambda(lambda x: x.expand(3, -1, -1).clone()))
+        for _ in transform:
+            transform[_].append(transforms.Lambda(lambda x: x.expand(3, -1, -1).clone()))
 
-    for type in transform:
-        transform[type] = transforms.Compose(transform[type])
+    for _ in transform:
+        transform[_] = transforms.Compose(transform[_])
 
     return transform

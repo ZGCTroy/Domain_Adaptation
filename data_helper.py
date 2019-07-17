@@ -17,7 +17,7 @@ def _check_exists(self):
            os.path.exists(os.path.join(self.root, self.test_file))
 
 def load_dataset(dataset_name, root_dir = './data'):
-    if dataset_name not in ['Office-31','Office-Home','Digits']:
+    if dataset_name not in ['Office31','Office-Home','Digits']:
         print('No this dataset')
         return
 
@@ -29,7 +29,7 @@ def load_dataset(dataset_name, root_dir = './data'):
     if dataset_name == 'Digits':
         return load_Digits(root_dir=root_dir)
 
-    if dataset_name == 'Office-31':
+    if dataset_name == 'Office31':
         return load_Office31(root_dir=root_dir)
 
     if dataset_name == 'Office-Home':
@@ -169,19 +169,19 @@ def main():
     # # SVHN train [73257,3,32,32] test [26032,3,32,32]
     # SVHN = load_SVHN(root_dir='./data/Digits/SVHN', image_size=[32,32])
     #
-    # # Office-31 train [73257,3,32,32] test [26032,3,32,32]
+    # # Office31 train [73257,3,32,32] test [26032,3,32,32]
     # SVHN = load_SVHN(root_dir='./data/Digits/SVHN', image_size=[32, 32])
 
-    root_dir = './data/Office-31'
-    # Office-31 31 classes , Amazon
+    root_dir = './data/Office31'
+    # Office31 31 classes , Amazon
     Amazon = load_Amazon(os.path.join(root_dir, 'Amazon'), image_size=[224, 224])
     print(Amazon)
 
-    # Office-31 31 classes , Dslr
+    # Office31 31 classes , Dslr
     Dslr = load_Dslr(os.path.join(root_dir, 'Dslr'), image_size=[224, 224])
     print(Dslr)
 
-    # Office-31 31 classes , Webcam
+    # Office31 31 classes , Webcam
     Webcam = load_Webcam(os.path.join(root_dir, 'Webcam'), image_size=[224, 224])
     print(Webcam)
 
