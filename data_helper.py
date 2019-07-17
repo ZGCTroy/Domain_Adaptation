@@ -17,7 +17,7 @@ def _check_exists(self):
            os.path.exists(os.path.join(self.root, self.test_file))
 
 def load_Amazon(root_dir, image_size=[224,224], Normalization = True):
-    transform = define_specific_transform(resize=image_size, Normalization = Normalization)
+    transform = define_specific_transform(resize=image_size, Normalization = Normalization, RGB=True)
     Amazon = {
         'train': datasets.ImageFolder(
             root=root_dir,
@@ -31,7 +31,7 @@ def load_Amazon(root_dir, image_size=[224,224], Normalization = True):
     return Amazon
 
 def load_Dslr(root_dir, image_size=[224,224], Normalization = True):
-    transform = define_specific_transform(resize=image_size, Normalization = Normalization)
+    transform = define_specific_transform(resize=image_size, Normalization = Normalization, RGB=True)
     Dslr = {
         'train': datasets.ImageFolder(
             root=root_dir,
@@ -45,7 +45,7 @@ def load_Dslr(root_dir, image_size=[224,224], Normalization = True):
     return Dslr
 
 def load_Webcam(root_dir, image_size=[224,224], Normalization = True):
-    transform = define_specific_transform(resize=image_size, Normalization = Normalization)
+    transform = define_specific_transform(resize=image_size, Normalization = Normalization, RGB=True)
     Webcam = {
         'train': datasets.ImageFolder(
             root=root_dir,
@@ -59,7 +59,7 @@ def load_Webcam(root_dir, image_size=[224,224], Normalization = True):
     return Webcam
 
 def load_Art(root_dir, image_size=[224,224], Normalization = True):
-    transform = define_specific_transform(resize=image_size, Normalization = Normalization)
+    transform = define_specific_transform(resize=image_size, Normalization = Normalization, RGB=True)
     Art = {
         'train': datasets.ImageFolder(
             root=root_dir,
@@ -73,7 +73,7 @@ def load_Art(root_dir, image_size=[224,224], Normalization = True):
     return Art
 
 def load_Clipart(root_dir, image_size=[224,224], Normalization = True):
-    transform = define_specific_transform(resize=image_size, Normalization = Normalization)
+    transform = define_specific_transform(resize=image_size, Normalization = Normalization, RGB=True)
     Clipart = {
         'train': datasets.ImageFolder(
             root=root_dir,
@@ -87,7 +87,7 @@ def load_Clipart(root_dir, image_size=[224,224], Normalization = True):
     return Clipart
 
 def load_Product(root_dir, image_size=[224,224], Normalization = True):
-    transform = define_specific_transform(resize=image_size, Normalization = Normalization)
+    transform = define_specific_transform(resize=image_size, Normalization = Normalization, RGB=True)
     Product = {
         'train': datasets.ImageFolder(
             root=root_dir,
@@ -101,7 +101,7 @@ def load_Product(root_dir, image_size=[224,224], Normalization = True):
     return Product
 
 def load_RealWorld(root_dir, image_size=[224,224], Normalization = True):
-    transform = define_specific_transform(resize=image_size, Normalization = Normalization)
+    transform = define_specific_transform(resize=image_size, Normalization = Normalization, RGB=True)
     RealWorld = {
         'train': datasets.ImageFolder(
             root=root_dir,
@@ -115,7 +115,7 @@ def load_RealWorld(root_dir, image_size=[224,224], Normalization = True):
     return RealWorld
 
 def load_SVHN(root_dir, image_size =[32,32], Normalization = True):
-    transform = define_specific_transform(resize=image_size, Normalization = Normalization)
+    transform = define_specific_transform(resize=image_size, Normalization = Normalization, RGB=True)
     SVHN = {
         'train': datasets.SVHN(
             root=root_dir, split='train', download=True,
@@ -129,7 +129,7 @@ def load_SVHN(root_dir, image_size =[32,32], Normalization = True):
     return SVHN
 
 def load_USPS(root_dir, image_size =[16,16], Gray_to_RGB = False, Normalization = True):
-    transform = define_specific_transform(resize=image_size, Gray_to_RGB=Gray_to_RGB, Normalization = Normalization)
+    transform = define_specific_transform(resize=image_size, Gray_to_RGB=Gray_to_RGB, Normalization = Normalization, RGB=False)
     USPS = {
         'train': USPSDataset(
             root=root_dir, split='train', download=True,
@@ -143,7 +143,7 @@ def load_USPS(root_dir, image_size =[16,16], Gray_to_RGB = False, Normalization 
     return USPS
 
 def load_MNIST(root_dir, image_size =[28,28], Gray_to_RGB = False, Normalization = True):
-    transform = define_specific_transform(resize=image_size, Gray_to_RGB=Gray_to_RGB, Normalization = Normalization)
+    transform = define_specific_transform(resize=image_size, Gray_to_RGB=Gray_to_RGB, Normalization = Normalization, RGB=False)
     MNIST = {
         'train': datasets.MNIST(
             root=root_dir, train=True, download=True,

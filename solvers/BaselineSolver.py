@@ -21,7 +21,7 @@ print(device)
 
 class BaselineSolver():
     def __init__(self, dataset_type, source_domain, target_domain, optimizer, criterion, pretrained, batch_size,
-                 num_epochs):
+                 num_epochs, num_workers=4):
         self.model = None
         self.model_name = ''
         self.dataset_type = dataset_type
@@ -49,6 +49,7 @@ class BaselineSolver():
             'val_loss': [],
             'test_loss': []
         }
+        self.num_workers = num_workers
 
     def add_log(self, epoch, train_acc, val_acc, test_acc, train_loss, val_loss, test_loss):
         self.log['model'].append(self.model_name)
@@ -68,9 +69,13 @@ class BaselineSolver():
         total_loss = 0
         corrects = 0
         data_num = len(data_loader.dataset)
+        batch_size = data_loader.batch_size
+        processed_num = 0
 
 
         for inputs, labels in data_loader:
+            sys.stdout.write('\r{}/{}'.format(processed_num, data_num))
+            sys.stdout.flush()
             inputs = inputs.to(device)
             labels = labels.to(device)
 
@@ -81,10 +86,11 @@ class BaselineSolver():
 
             total_loss += loss.item() * inputs.size(0)
             corrects += (preds == labels.data).sum().item()
+            processed_num += batch_size
 
         acc = corrects / data_num
         average_loss = total_loss / data_num
-        print('Datasize = {} , corrects = {}'.format(data_num, corrects))
+        print('\nDatasize = {} , corrects = {}'.format(data_num, corrects))
 
         return average_loss, acc
 
@@ -121,7 +127,7 @@ class BaselineSolver():
         acc = corrects / data_num
         average_loss = total_loss / data_num
         print()
-        print('Datasize = {} , corrects = {}'.format(data_num, corrects))
+        print('\nDatasize = {} , corrects = {}'.format(data_num, corrects))
 
         return average_loss, acc
 
@@ -254,11 +260,11 @@ class BaselineSolver():
 
         self.data_loader = {
             'train': torch.utils.data.DataLoader(source_data['train'], batch_size=self.batch_size, shuffle=True,
-                                                 num_workers=0),
-            'val': torch.utils.data.DataLoader(source_data['test'], batch_size=round(self.batch_size * 1.5),
-                                               shuffle=True, num_workers=0),
-            'test': torch.utils.data.DataLoader(target_data['test'], batch_size=round(self.batch_size * 1.5),
-                                                shuffle=False, num_workers=0),
+                                                 num_workers=self.num_workers),
+            'val': torch.utils.data.DataLoader(source_data['test'], batch_size=self.batch_size,
+                                               shuffle=True, num_workers=self.num_workers),
+            'test': torch.utils.data.DataLoader(target_data['test'], batch_size=self.batch_size,
+                                                shuffle=False, num_workers=self.num_workers),
         }
 
         self.model = self.model.to(device)
@@ -273,7 +279,6 @@ class BaselineSolver():
             num_epochs=self.num_epochs
         )
 
-
 solverMtoU = BaselineSolver(
     dataset_type = 'Digits',
     source_domain = 'MNIST',
@@ -283,6 +288,7 @@ solverMtoU = BaselineSolver(
     batch_size = 256,
     num_epochs = 30,
     pretrained = False,
+    num_workers = 4
 )
 
 solverUtoM = BaselineSolver(
@@ -294,6 +300,7 @@ solverUtoM = BaselineSolver(
     batch_size = 256,
     num_epochs = 30,
     pretrained = False,
+    num_workers = 4
 )
 
 solverStoM = BaselineSolver(
@@ -305,6 +312,7 @@ solverStoM = BaselineSolver(
     batch_size =256,
     num_epochs = 30,
     pretrained = False,
+    num_workers = 4
 )
 
 solverAtoW = BaselineSolver(
@@ -313,9 +321,10 @@ solverAtoW = BaselineSolver(
     target_domain = 'Webcam',
     optimizer = 'Adam',
     criterion = nn.CrossEntropyLoss(),
-    batch_size =5,
+    batch_size = 16,
     num_epochs = 30,
-    pretrained = False,
+    pretrained = True,
+    num_workers = 2
 )
 
 solverDtoW = BaselineSolver(
@@ -324,9 +333,10 @@ solverDtoW = BaselineSolver(
     target_domain = 'Webcam',
     optimizer = 'Adam',
     criterion = nn.CrossEntropyLoss(),
-    batch_size =5,
+    batch_size = 16,
     num_epochs = 30,
     pretrained = False,
+    num_workers = 2
 )
 
 solverWtoD = BaselineSolver(
@@ -335,14 +345,14 @@ solverWtoD = BaselineSolver(
     target_domain = 'Dslr',
     optimizer = 'Adam',
     criterion = nn.CrossEntropyLoss(),
-    batch_size =5,
+    batch_size =16,
     num_epochs = 30,
     pretrained = False,
+    num_workers = 2
 )
 
+#solverAtoW.solve()
+#solverDtoW.solve()
+solverWtoD.solve()
 
-# solverAtoW.solve()
-# solverDtoW.solve()
-#solverWtoD.solve()
-
-#solverUtoM.solve()
+# solverUtoM.solve()
