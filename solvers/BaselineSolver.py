@@ -310,8 +310,8 @@ class BaselineSolver():
             self.log_path = './logs/Resnet50_WtoD.csv'
             self.model_name = 'Resnet50_WtoD'
 
-        print('Source domain :{}, Data size:{}'.format(self.source_domain, len(source_data['train'])))
-        print('Target domain :{}, Data size:{}'.format(self.target_domain, len(target_data['test'])))
+        print('Source domain :{}, Data size:{}, Classes number : {}'.format(self.source_domain, len(source_data['train']),len(source_data['train'].classes)))
+        print('Target domain :{}, Data size:{}, Classes number : {}'.format(self.target_domain, len(target_data['test']),len(target_data['test'].classes)))
 
         if self.pretrained:
             self.load_model(self.model, self.model_saving_path)
@@ -360,7 +360,7 @@ class BaselineSolver():
 
 solver = BaselineSolver(
     dataset_type = 'Office',
-    source_domain = 'Dslr',
+    source_domain = 'Amazon',
     target_domain = 'Webcam',
     optimizer = 'Adam',
     criterion = nn.CrossEntropyLoss(),
