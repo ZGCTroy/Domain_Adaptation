@@ -5,13 +5,13 @@ def transform_for_Digits(resize_size, Gray_to_RGB=False):
         'train': [
             transforms.Resize(resize_size),
             transforms.RandomHorizontalFlip(),
-            transforms.Normalize((0.5,), (0.5,)),
-            transforms.ToTensor()
+            transforms.ToTensor(),
+            transforms.Normalize((0.5,), (0.5,))
         ],
         'test': [
             transforms.Resize(resize_size),
-            transforms.Normalize((0.5,), (0.5,)),
-            transforms.ToTensor()
+            transforms.ToTensor(),
+            transforms.Normalize((0.5,), (0.5,))
         ]
     }
 

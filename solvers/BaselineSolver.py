@@ -1,27 +1,17 @@
 from __future__ import print_function, division
-# import os
-# os.chdir('/content/drive/My Drive/BaseLine')
-
 import torch
 import torch.nn as nn
 import torchvision
-import matplotlib.pyplot as plt
 import time
-import copy
 from models.baseline import BaselineMU, BaselineStoM
 from data_helper import *
 import sys
 import pandas as pd
 
-plt.ion()  # interactive mode
-
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-print(device)
-
 
 class BaselineSolver():
-    def __init__(self, dataset_type, source_domain, target_domain, optimizer, criterion, pretrained, batch_size,
-                 num_epochs, if_test=True, test_mode=False, num_workers=4):
+    def __init__(self, dataset_type, source_domain, target_domain, cuda , optimizer = 'Adam', criterion = nn.CrossEntropyLoss(), pretrained = False, batch_size = 32,
+                 num_epochs = 200, if_test=True, test_mode=False, num_workers=4):
         self.model = None
         self.model_name = ''
         self.dataset_type = dataset_type
@@ -38,7 +28,7 @@ class BaselineSolver():
         self.batch_size = batch_size
         self.num_epochs = num_epochs
         self.pretrained = pretrained
-        self.model_saving_path = ''
+        self.model_saving_path = {'train': '', 'test': ''}
         self.model = None
         self.log_path = ''
         self.log = {
@@ -56,6 +46,8 @@ class BaselineSolver():
         self.num_workers = num_workers
         self.if_test = if_test
         self.test_mode = test_mode
+        self.cuda = cuda
+        self.device = torch.device(self.cuda if torch.cuda.is_available() else "cpu")
 
     def add_log(self, epoch, train_acc, val_acc, test_acc, train_loss, val_loss, test_loss):
         self.log['model'].append(self.model_name)
@@ -81,8 +73,8 @@ class BaselineSolver():
         for inputs, labels in data_loader:
             sys.stdout.write('\r{}/{}'.format(processed_num, data_num))
             sys.stdout.flush()
-            inputs = inputs.to(device)
-            labels = labels.to(device)
+            inputs = inputs.to(self.device)
+            labels = labels.to(self.device)
 
             outputs = self.model(inputs)
             _, preds = torch.max(outputs, 1)
@@ -113,8 +105,8 @@ class BaselineSolver():
         for inputs, labels in data_loader:
             sys.stdout.write('\r{}/{}'.format(processed_num, data_num))
             sys.stdout.flush()
-            inputs = inputs.to(device)
-            labels = labels.to(device)
+            inputs = inputs.to(self.device)
+            labels = labels.to(self.device)
 
             self.optimizer.zero_grad()
 
@@ -146,6 +138,14 @@ class BaselineSolver():
         print('Initial Train Loss: {:.4f} Acc: {:.4f}\n'.format(best_train_loss, best_train_acc))
         print()
 
+        if self.if_test:
+            best_test_loss, best_test_acc = self.test(
+                data_loader=self.data_loader['test'],
+                criterion=self.criterion
+            )
+            print('Initial Test Loss: {:.4f} Acc: {:.4f}\n'.format(best_test_loss, best_test_acc))
+            print()
+
         for epoch in range(num_epochs):
             print('Epoch {}/{}'.format(epoch, num_epochs - 1))
             print('-' * 10)
@@ -163,13 +163,17 @@ class BaselineSolver():
                     criterion=self.criterion
                 )
                 print('Test Loss: {:.4f} Acc: {:.4f}\n'.format(test_loss, test_acc))
+                if test_acc >= best_test_acc:
+                    best_test_acc = test_acc
+                    best_test_loss = test_loss
+                    self.save_model(model=self.model, path=self.model_saving_path['test'])
             else:
                 test_loss = test_acc = 0
 
             if train_acc >= best_train_acc:
                 best_train_acc = train_acc
                 best_train_loss = train_loss
-                self.save_model(model=self.model, path=self.model_saving_path)
+                self.save_model(model=self.model, path=self.model_saving_path['train'])
 
             self.add_log(epoch, train_acc, 0, test_acc, train_loss, 0, test_loss)
 
@@ -185,6 +189,9 @@ class BaselineSolver():
 
         print('Training complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
         print('Best Train Acc: {:4f}\n'.format(best_train_acc))
+
+        if self.if_test:
+            print('Best Test Acc: {:4f}\n'.format(best_test_acc))
 
     def train_Digits(self, num_epochs):
         since = time.time()
@@ -226,7 +233,7 @@ class BaselineSolver():
             if val_acc >= best_val_acc:
                 best_val_acc = val_acc
                 best_val_loss = val_loss
-                self.save_model(model=self.model, path=self.model_saving_path)
+                self.save_model(model=self.model, path=self.model_saving_path['train'])
 
             self.add_log(epoch, train_acc, val_acc, test_acc, train_loss, val_loss, test_loss)
 
@@ -263,60 +270,51 @@ class BaselineSolver():
             source_data = load_MNIST(root_dir='./data/Digits/MNIST', resize_size=28, Gray_to_RGB=False)
             target_data = load_USPS(root_dir='./data/Digits/USPS', resize_size=28, Gray_to_RGB=False)
             self.model = BaselineMU(n_classes=10)
-            self.model_saving_path = './models_checkpoints/BaselineMtoU.pt'
-            self.log_path = './logs/BaselineMtoU.csv'
             self.model_name = 'BaselineMtoU'
 
         if self.source_domain == 'USPS' and self.target_domain == 'MNIST':
             source_data = load_USPS(root_dir='./data/Digits/USPS', resize_size=28, Gray_to_RGB=False)
             target_data = load_MNIST(root_dir='./data/Digits/MNIST', resize_size=28, Gray_to_RGB=False)
             self.model = BaselineMU(n_classes=10)
-            self.model_saving_path = './models_checkpoints/BaselineUtoM.pt'
-            self.log_path = './logs/BaselineUtoM.csv'
             self.model_name = 'BaselineUtoM'
 
         if self.source_domain == 'SVHN' and self.target_domain == 'MNIST':
             source_data = load_SVHN(root_dir='./data/Digits/SVHN', resize_size=32)
             target_data = load_MNIST(root_dir='./data/Digits/MNIST', resize_size=32, Gray_to_RGB=True)
             self.model = BaselineStoM(n_classes=10)
-            self.model_saving_path = './models_checkpoints/BaselineStoM.pt'
-            self.log_path = './logs/BaselineStoM.csv'
             self.model_name = 'BaselineStoM'
 
         if self.source_domain == 'Amazon' and self.target_domain == 'Webcam':
             source_data = load_Amazon(root_dir='./data/Office31/Amazon', resize_size=256, crop_size=224)
             target_data = load_Webcam(root_dir='./data/Office31/Webcam', resize_size=256, crop_size=224)
-            self.model = torchvision.models.resnet50(pretrained=False)
+            self.model = torchvision.models.resnet50(pretrained=True)
             self.model.fc = nn.Linear(self.model.fc.in_features, 31)
-            self.model_saving_path = './models_checkpoints/Resnet50_AtoW.pt'
-            self.log_path = './logs/Resnet50_AtoW.csv'
             self.model_name = 'Resnet50_AtoW'
 
         if self.source_domain == 'Dslr' and self.target_domain == 'Webcam':
             source_data = load_Dslr(root_dir='./data/Office31/Dslr', resize_size=256, crop_size=224)
             target_data = load_Webcam(root_dir='./data/Office31/Webcam', resize_size=256, crop_size=224)
-            self.model = torchvision.models.resnet50(pretrained=False)
+            self.model = torchvision.models.resnet50(pretrained=True)
             self.model.fc = nn.Linear(self.model.fc.in_features, 31)
-            self.model_saving_path = './models_checkpoints/Resnet50_DtoW.pt'
-            self.log_path = './logs/Resnet50_DtoW.csv'
             self.model_name = 'Resnet50_DtoW'
 
         if self.source_domain == 'Webcam' and self.target_domain == 'Dslr':
             source_data = load_Webcam(root_dir='./data/Office31/Webcam', resize_size=256, crop_size=224)
             target_data = load_Dslr(root_dir='./data/Office31/Dslr', resize_size=256, crop_size=224)
-            self.model = torchvision.models.resnet50(pretrained=False)
+            self.model = torchvision.models.resnet50(pretrained=True)
             self.model.fc = nn.Linear(self.model.fc.in_features, 31)
-            self.model_saving_path = './models_checkpoints/Resnet50_WtoD.pt'
-            self.log_path = './logs/Resnet50_WtoD.csv'
             self.model_name = 'Resnet50_WtoD'
 
-        print('Source domain :{}, Data size:{}, Classes number : {}'.format(self.source_domain, len(source_data['train']),len(source_data['train'].classes)))
-        print('Target domain :{}, Data size:{}, Classes number : {}'.format(self.target_domain, len(target_data['test']),len(target_data['test'].classes)))
+        print(
+            'Source domain :{}, Data size:{}'.format(self.source_domain, len(source_data['train'])))
+        print(
+            'Target domain :{}, Data size:{}'.format(self.target_domain, len(target_data['test'])))
+
+        self.log_path = os.path.join('./logs', self.model_name + '.csv')
+        self.model_saving_path['train'] = os.path.join('./models_checkpoints', self.model_name + '_best_train.pt')
 
         if self.pretrained:
-            self.load_model(self.model, self.model_saving_path)
-
-        self.model = self.model.to(device)
+            self.load_model(self.model, self.model_saving_path['train'])
 
         if self.test_mode:
             self.test(
@@ -345,6 +343,9 @@ class BaselineSolver():
                 batch_size=self.batch_size,
                 shuffle=False, num_workers=self.num_workers
             )
+            self.model_saving_path['test'] = os.path.join('./models_checkpoints', self.model_name + '_best_test.pt')
+
+        self.model = self.model.to(self.device)
 
         if self.dataset_type == 'Digits':
             self.data_loader['val'] = torch.utils.data.DataLoader(
@@ -358,18 +359,3 @@ class BaselineSolver():
             self.train_Office(num_epochs=self.num_epochs)
 
 
-solver = BaselineSolver(
-    dataset_type = 'Office',
-    source_domain = 'Amazon',
-    target_domain = 'Webcam',
-    optimizer = 'Adam',
-    criterion = nn.CrossEntropyLoss(),
-    batch_size = 16,
-    num_epochs = 200,
-    pretrained = True,
-    test_mode = False,
-    if_test = True,
-    num_workers = 8
-)
-
-solver.solve()
