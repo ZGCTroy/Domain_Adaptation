@@ -1,32 +1,42 @@
 from torchvision import transforms
 
-def define_specific_transform(resize, RGB = True, Gray_to_RGB=False, Normalization = True):
-    transform = {
+def transform_for_Digits(resize_size, Gray_to_RGB=False):
+    T = {
         'train': [
-            transforms.RandomResizedCrop(resize),
+            transforms.Resize(resize_size),
             transforms.RandomHorizontalFlip(),
+            transforms.Normalize((0.5,), (0.5,)),
+            transforms.ToTensor()
         ],
         'test': [
-            transforms.RandomResizedCrop(resize),
+            transforms.Resize(resize_size),
+            transforms.Normalize((0.5,), (0.5,)),
+            transforms.ToTensor()
         ]
     }
 
-    for _ in transform:
-        transform[_].append(transforms.ToTensor())
-
     if Gray_to_RGB:
-        for _ in transform:
-            transform[_].append(transforms.Lambda(lambda x: x.expand([3, -1, -1]).clone()))
+        for phase in T:
+            T[phase].append(transforms.Lambda(lambda x: x.expand([3, -1, -1]).clone()))
 
-    if Normalization:
-        if RGB or Gray_to_RGB:
-            for _ in transform:
-                transform[_].append(transforms.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225]))
-        else:
-            for _ in transform:
-                transform[_].append(transforms.Normalize(mean=(0.5), std=(0.2881)))
+    for phase in T:
+        T[phase] = transforms.Compose(T[phase])
 
-    for _ in transform:
-        transform[_] = transforms.Compose(transform[_])
+    return T
 
-    return transform
+def transform_for_Office(resize_size, crop_size):
+    T = {
+        'train': transforms.Compose([
+            transforms.Resize(resize_size),
+            transforms.RandomResizedCrop(crop_size),
+            transforms.RandomHorizontalFlip(),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+        ]),
+        'test': transforms.Compose([
+            transforms.Resize(resize_size),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+        ])
+    }
+    return T

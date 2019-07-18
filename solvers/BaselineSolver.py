@@ -260,32 +260,32 @@ class BaselineSolver():
         target_data = None
 
         if self.source_domain == 'MNIST' and self.target_domain == 'USPS':
-            source_data = load_MNIST(root_dir='./data/Digits/MNIST', image_size=28, Gray_to_RGB=False)
-            target_data = load_USPS(root_dir='./data/Digits/USPS', image_size=28, Gray_to_RGB=False)
+            source_data = load_MNIST(root_dir='./data/Digits/MNIST', resize_size=28, Gray_to_RGB=False)
+            target_data = load_USPS(root_dir='./data/Digits/USPS', resize_size=28, Gray_to_RGB=False)
             self.model = BaselineMU(n_classes=10)
             self.model_saving_path = './models_checkpoints/BaselineMtoU.pt'
             self.log_path = './logs/BaselineMtoU.csv'
             self.model_name = 'BaselineMtoU'
 
         if self.source_domain == 'USPS' and self.target_domain == 'MNIST':
-            source_data = load_USPS(root_dir='./data/Digits/USPS', image_size=28, Gray_to_RGB=False)
-            target_data = load_MNIST(root_dir='./data/Digits/MNIST', image_size=28, Gray_to_RGB=False)
+            source_data = load_USPS(root_dir='./data/Digits/USPS', resize_size=28, Gray_to_RGB=False)
+            target_data = load_MNIST(root_dir='./data/Digits/MNIST', resize_size=28, Gray_to_RGB=False)
             self.model = BaselineMU(n_classes=10)
             self.model_saving_path = './models_checkpoints/BaselineUtoM.pt'
             self.log_path = './logs/BaselineUtoM.csv'
             self.model_name = 'BaselineUtoM'
 
         if self.source_domain == 'SVHN' and self.target_domain == 'MNIST':
-            source_data = load_SVHN(root_dir='./data/Digits/SVHN', image_size=32)
-            target_data = load_MNIST(root_dir='./data/Digits/MNIST', image_size=32, Gray_to_RGB=True)
+            source_data = load_SVHN(root_dir='./data/Digits/SVHN', resize_size=32)
+            target_data = load_MNIST(root_dir='./data/Digits/MNIST', resize_size=32, Gray_to_RGB=True)
             self.model = BaselineStoM(n_classes=10)
             self.model_saving_path = './models_checkpoints/BaselineStoM.pt'
             self.log_path = './logs/BaselineStoM.csv'
             self.model_name = 'BaselineStoM'
 
         if self.source_domain == 'Amazon' and self.target_domain == 'Webcam':
-            source_data = load_Amazon(root_dir='./data/Office31/Amazon', image_size=224)
-            target_data = load_Webcam(root_dir='./data/Office31/Webcam', image_size=224)
+            source_data = load_Amazon(root_dir='./data/Office31/Amazon', resize_size=256, crop_size=224)
+            target_data = load_Webcam(root_dir='./data/Office31/Webcam', resize_size=256, crop_size=224)
             self.model = torchvision.models.resnet50(pretrained=False)
             self.model.fc = nn.Linear(self.model.fc.in_features, 31)
             self.model_saving_path = './models_checkpoints/Resnet50_AtoW.pt'
@@ -293,8 +293,8 @@ class BaselineSolver():
             self.model_name = 'Resnet50_AtoW'
 
         if self.source_domain == 'Dslr' and self.target_domain == 'Webcam':
-            source_data = load_Dslr(root_dir='./data/Office31/Dslr', image_size=224)
-            target_data = load_Webcam(root_dir='./data/Office31/Webcam', image_size=224)
+            source_data = load_Dslr(root_dir='./data/Office31/Dslr', resize_size=256, crop_size=224)
+            target_data = load_Webcam(root_dir='./data/Office31/Webcam', resize_size=256, crop_size=224)
             self.model = torchvision.models.resnet50(pretrained=False)
             self.model.fc = nn.Linear(self.model.fc.in_features, 31)
             self.model_saving_path = './models_checkpoints/Resnet50_DtoW.pt'
@@ -302,8 +302,8 @@ class BaselineSolver():
             self.model_name = 'Resnet50_DtoW'
 
         if self.source_domain == 'Webcam' and self.target_domain == 'Dslr':
-            source_data = load_Webcam(root_dir='./data/Office31/Webcam', image_size=224)
-            target_data = load_Dslr(root_dir='./data/Office31/Dslr', image_size=224)
+            source_data = load_Webcam(root_dir='./data/Office31/Webcam', resize_size=256, crop_size=224)
+            target_data = load_Dslr(root_dir='./data/Office31/Dslr', resize_size=256, crop_size=224)
             self.model = torchvision.models.resnet50(pretrained=False)
             self.model.fc = nn.Linear(self.model.fc.in_features, 31)
             self.model_saving_path = './models_checkpoints/Resnet50_WtoD.pt'
@@ -357,87 +357,19 @@ class BaselineSolver():
         else:
             self.train_Office(num_epochs=self.num_epochs)
 
-solverMtoU = BaselineSolver(
-    dataset_type = 'Digits',
-    source_domain = 'MNIST',
-    target_domain = 'USPS',
-    optimizer = 'Adam',
-    criterion = nn.CrossEntropyLoss(),
-    batch_size = 256,
-    num_epochs = 30,
-    pretrained = False,
-    if_test = False,
-    num_workers = 4
-)
 
-solverUtoM = BaselineSolver(
-    dataset_type = 'Digits',
-    source_domain = 'USPS',
-    target_domain = 'MNIST',
-    optimizer = 'Adam',
-    criterion = nn.CrossEntropyLoss(),
-    batch_size = 256,
-    num_epochs = 30,
-    pretrained = False,
-    if_test = False,
-    num_workers = 4
-)
-
-solverStoM = BaselineSolver(
-    dataset_type = 'Digits',
-    source_domain = 'SVHN',
-    target_domain = 'MNIST',
-    optimizer = 'Adam',
-    criterion = nn.CrossEntropyLoss(),
-    batch_size =256,
-    num_epochs = 30,
-    pretrained = False,
-    if_test = False,
-    num_workers = 4
-)
-
-solverAtoW = BaselineSolver(
-    dataset_type = 'Office31',
-    source_domain = 'Amazon',
-    target_domain = 'Webcam',
-    optimizer = 'Adam',
-    criterion = nn.CrossEntropyLoss(),
-    batch_size = 16,
-    num_epochs = 30,
-    pretrained = True,
-    if_test = True,
-    test_mode = False,
-    num_workers = 4
-)
-
-solverDtoW = BaselineSolver(
-    dataset_type = 'Office31',
+solver = BaselineSolver(
+    dataset_type = 'Office',
     source_domain = 'Dslr',
     target_domain = 'Webcam',
     optimizer = 'Adam',
     criterion = nn.CrossEntropyLoss(),
-    batch_size =16,
-    num_epochs = 30,
-    pretrained = False,
-    if_test = False,
+    batch_size = 16,
+    num_epochs = 200,
+    pretrained = True,
     test_mode = False,
-    num_workers = 4
+    if_test = True,
+    num_workers = 8
 )
 
-solverWtoD = BaselineSolver(
-    dataset_type = 'Office31',
-    source_domain = 'Webcam',
-    target_domain = 'Dslr',
-    optimizer = 'Adam',
-    criterion = nn.CrossEntropyLoss(),
-    batch_size =16,
-    num_epochs = 30,
-    pretrained = False,
-    num_workers = 4
-)
-
-#solverAtoW.solve()
-solverDtoW.solve()
-#solverWtoD.solve()
-
-# solverUtoM.solve()
+solver.solve()
