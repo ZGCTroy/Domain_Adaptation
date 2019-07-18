@@ -16,9 +16,9 @@ def _check_exists(self):
     return os.path.exists(os.path.join(self.root, self.training_file)) and \
            os.path.exists(os.path.join(self.root, self.test_file))
 
-def load_Amazon(root_dir, resize_size = 256, crop_size = 224):
+def load_Office(root_dir, resize_size = 256, crop_size = 224):
     transform = transform_for_Office(resize_size=resize_size, crop_size = crop_size)
-    Amazon = {
+    dataset = {
         'train': datasets.ImageFolder(
             root=root_dir,
             transform=transform['train']
@@ -28,91 +28,7 @@ def load_Amazon(root_dir, resize_size = 256, crop_size = 224):
             transform=transform['test']
         )
     }
-    return Amazon
-
-def load_Dslr(root_dir, resize_size = 256, crop_size = 224):
-    transform = transform_for_Office(resize_size=resize_size, crop_size=crop_size)
-    Dslr = {
-        'train': datasets.ImageFolder(
-            root=root_dir,
-            transform=transform['train']
-        ),
-        'test': datasets.ImageFolder(
-            root=root_dir,
-            transform=transform['test']
-        )
-    }
-    return Dslr
-
-def load_Webcam(root_dir, resize_size = 256, crop_size = 224):
-    transform = transform_for_Office(resize_size=resize_size, crop_size=crop_size)
-    Webcam = {
-        'train': datasets.ImageFolder(
-            root=root_dir,
-            transform=transform['train']
-        ),
-        'test': datasets.ImageFolder(
-            root=root_dir,
-            transform=transform['test']
-        )
-    }
-    return Webcam
-
-def load_Art(root_dir, resize_size = 256, crop_size = 224):
-    transform = transform_for_Office(resize_size=resize_size, crop_size=crop_size)
-    Art = {
-        'train': datasets.ImageFolder(
-            root=root_dir,
-            transform=transform['train']
-        ),
-        'test': datasets.ImageFolder(
-            root=root_dir,
-            transform=transform['test']
-        )
-    }
-    return Art
-
-def load_Clipart(root_dir, resize_size = 256, crop_size = 224):
-    transform = transform_for_Office(resize_size=resize_size, crop_size=crop_size)
-    Clipart = {
-        'train': datasets.ImageFolder(
-            root=root_dir,
-            transform=transform['train']
-        ),
-        'test': datasets.ImageFolder(
-            root=root_dir,
-            transform=transform['test']
-        )
-    }
-    return Clipart
-
-def load_Product(root_dir, resize_size = 256, crop_size = 224):
-    transform = transform_for_Office(resize_size=resize_size, crop_size=crop_size)
-    Product = {
-        'train': datasets.ImageFolder(
-            root=root_dir,
-            transform=transform['train']
-        ),
-        'test': datasets.ImageFolder(
-            root=root_dir,
-            transform=transform['test']
-        )
-    }
-    return Product
-
-def load_RealWorld(root_dir, resize_size = 256, crop_size = 224):
-    transform = transform_for_Office(resize_size=resize_size, crop_size=crop_size)
-    RealWorld = {
-        'train': datasets.ImageFolder(
-            root=root_dir,
-            transform=transform['train']
-        ),
-        'test': datasets.ImageFolder(
-            root=root_dir,
-            transform=transform['test']
-        )
-    }
-    return RealWorld
+    return dataset
 
 def load_SVHN(root_dir, resize_size = 32):
     transform = transform_for_Digits(resize_size=resize_size, Gray_to_RGB=False)

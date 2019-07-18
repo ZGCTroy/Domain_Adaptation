@@ -22,3 +22,6 @@ Baseline Resnet50 for Office-Home
 * RealWorld 4357
 
 # 7月18日
+Add parser
+
+first run on server

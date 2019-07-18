@@ -17,7 +17,7 @@ parser.add_argument('--if_test', action='store_true', default=False)
 parser.add_argument('--cuda', type=str, default='cuda:0')
 
 
-parser.add_argument('--batch_size', type=int, default=32)
+parser.add_argument('--batch_size', type=int, default=36)
 parser.add_argument('--num_workers', type=int, default=4)
 parser.add_argument('--epochs', type=int, default=300)
 

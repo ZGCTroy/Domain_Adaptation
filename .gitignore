@@ -1,4 +1,3 @@
-data/Office-31
-data/Office-Home
-data/Digits
 data/
+models_checkpoints/
+logs/
