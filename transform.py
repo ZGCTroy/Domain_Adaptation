@@ -8,7 +8,6 @@ def define_specific_transform(resize, RGB = True, Gray_to_RGB=False, Normalizati
         ],
         'test': [
             transforms.RandomResizedCrop(resize),
-            transforms.RandomHorizontalFlip(),
         ]
     }
 
