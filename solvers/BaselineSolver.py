@@ -1,20 +1,22 @@
-
 from __future__ import print_function, division
 import os
-os.chdir('/home/zgc/BaseLine')
+
+os.chdir('/content/drive/My Drive/BaseLine')
 print(os.getcwd())
 
 import torch
 import torch.nn as nn
 import torchvision
 import time
-from .models.baseline import BaselineMU, BaselineStoM
+from models.baseline import BaselineMU, BaselineStoM
 from data_helper import *
 import sys
 import pandas as pd
 
+
 class Solver():
-    def __init__(self, source_domain, target_domain, cuda, optimizer='Adam', criterion=nn.CrossEntropyLoss(), pretrained=False, batch_size=32,
+    def __init__(self, source_domain, target_domain, cuda, optimizer='Adam', criterion=nn.CrossEntropyLoss(),
+                 pretrained=False, batch_size=32,
                  num_epochs=300, if_test=True, test_mode=False, num_workers=2):
         self.model = None
         self.model_name = ''
@@ -23,7 +25,7 @@ class Solver():
         self.criterion = criterion
         self.optimizer = optimizer
         self.scheduler = None
-        self.data_loader = {'train': None,'val': None,'test': None}
+        self.data_loader = {'train': None, 'val': None, 'test': None}
         self.batch_size = batch_size
         self.num_epochs = num_epochs
         self.pretrained = pretrained
@@ -111,6 +113,13 @@ class Solver():
         self.log['val_loss'].append(val_loss)
         self.log['test_loss'].append(test_loss)
 
+    def save_log(self):
+        pd.DataFrame(
+            data=self.log,
+            columns=['model', 'source', 'target', 'epoch', 'train_acc', 'val_acc', 'test_acc', 'train_loss',
+                     'val_loss', 'test_loss']
+        ).to_csv(self.log_path, index=0)
+
     def save_model(self, model, path):
         print('New model is better, start saving ......')
         torch.save(model.state_dict(), path)
@@ -123,14 +132,15 @@ class Solver():
         else:
             print('Cannot find {}, use the initial model\n'.format(path))
 
+
 class DigitsBaselineSolver(Solver):
     dataset_type = 'Digits'
 
     def __init__(self, source_domain, target_domain, cuda, pretrained=False, batch_size=32,
                  num_epochs=300, if_test=True, test_mode=False, num_workers=2):
-        super(DigitsBaselineSolver,self).__init__(
-            source_domain = source_domain,
-            target_domain = target_domain,
+        super(DigitsBaselineSolver, self).__init__(
+            source_domain=source_domain,
+            target_domain=target_domain,
             cuda=cuda,
             pretrained=pretrained,
             batch_size=batch_size,
@@ -158,6 +168,11 @@ class DigitsBaselineSolver(Solver):
             self.target_data = load_MNIST(root_dir='./data/Digits/MNIST', resize_size=32, Gray_to_RGB=True)
             self.model = BaselineStoM(n_classes=10)
             self.model_name = 'BaselineStoM'
+
+        if self.pretrained:
+            self.load_model(self.model, self.model_saving_path['train'])
+
+        self.model = self.model.to(self.device)
 
         print('Source domain :{}, Data size:{}'.format(self.source_domain, len(source_data['train'])))
         print('Target domain :{}, Data size:{}'.format(self.target_domain, len(target_data['test'])))
@@ -264,27 +279,20 @@ class DigitsBaselineSolver(Solver):
             )
             print('Val Loss: {:.4f} Acc: {:.4f}\n'.format(val_loss, val_acc))
 
+            if val_acc >= best_val_acc:
+                best_val_acc = val_acc
+                best_val_loss = val_loss
+                self.save_model(model=self.model, path=self.model_saving_path['train'])
+
             if self.if_test:
                 test_loss, test_acc = self.test(
                     data_loader=self.data_loader['test'],
                     criterion=self.criterion
                 )
                 print('Test Loss: {:.4f} Acc: {:.4f}\n'.format(test_loss, test_acc))
+                self.add_log(epoch, train_acc, val_acc, test_acc, train_loss, val_loss, test_loss)
             else:
-                test_loss = test_acc = 0
-
-            if val_acc >= best_val_acc:
-                best_val_acc = val_acc
-                best_val_loss = val_loss
-                self.save_model(model=self.model, path=self.model_saving_path['train'])
-
-            self.add_log(epoch, train_acc, val_acc, test_acc, train_loss, val_loss, test_loss)
-
-            pd.DataFrame(
-                data=self.log,
-                columns=['model', 'source', 'target', 'epoch', 'train_acc', 'val_acc', 'test_acc', 'train_loss',
-                         'val_loss', 'test_loss']
-            ).to_csv(self.log_path, index=0)
+                self.add_log(epoch, train_acc, val_acc, 0, train_loss, val_loss, 0)
 
             print()
 
@@ -293,13 +301,14 @@ class DigitsBaselineSolver(Solver):
         print('Training complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
         print('Best Val Acc: {:4f}\n'.format(best_val_acc))
 
+
 class OfficeBaselineSolver(Solver):
 
     def __init__(self, dataset_type, source_domain, target_domain, cuda, pretrained=False, batch_size=32,
                  num_epochs=300, if_test=True, test_mode=False, num_workers=2):
-        super(OfficeBaselineSolver,self).__init__(
-            source_domain = source_domain,
-            target_domain = target_domain,
+        super(OfficeBaselineSolver, self).__init__(
+            source_domain=source_domain,
+            target_domain=target_domain,
             cuda=cuda,
             pretrained=pretrained,
             batch_size=batch_size,
@@ -312,23 +321,34 @@ class OfficeBaselineSolver(Solver):
 
     def load_dataset_and_set_model(self):
         if self.dataset_type == 'Office31':
-            self.source_data = load_Office(root_dir=os.path.join('./data/Office31', self.source_domain), resize_size=256,
-                                      crop_size=224)
-            self.target_data = load_Office(root_dir=os.path.join('./data/Office31', self.target_domain), resize_size=256,
-                                      crop_size=224)
+            self.source_data = load_Office(root_dir=os.path.join('./data/Office31', self.source_domain),
+                                           resize_size=256,
+                                           crop_size=224)
+            self.target_data = load_Office(root_dir=os.path.join('./data/Office31', self.target_domain),
+                                           resize_size=256,
+                                           crop_size=224)
             self.model_name = 'Resnet50' + self.source_domain[0] + 'to' + self.target_domain[0]
+            self.n_classes = 31
         else:
-            self.source_data = load_Office(root_dir=os.path.join('./data/Office-Home', self.source_domain), resize_size=256,
-                                      crop_size=224)
-            self.target_data = load_Office(root_dir=os.path.join('./data/Office-Home', self.target_domain), resize_size=256,
-                                      crop_size=224)
+            self.source_data = load_Office(root_dir=os.path.join('./data/Office-Home', self.source_domain),
+                                           resize_size=256,
+                                           crop_size=224)
+            self.target_data = load_Office(root_dir=os.path.join('./data/Office-Home', self.target_domain),
+                                           resize_size=256,
+                                           crop_size=224)
             self.model_name = 'Resnet50' + self.source_domain[:1] + 'to' + self.target_domain[:1]
+            self.n_classes = 59
+
+        self.model = torchvision.models.resnet50(pretrained=True)
+        self.model.fc = nn.Linear(self.model.fc.in_features, self.n_classes)
+
+        if self.pretrained:
+            self.load_model(self.model, self.model_saving_path['train'])
+
+        self.model = self.model.to(self.device)
 
         print('Source domain :{}, Data size:{}'.format(self.source_domain, len(self.source_data['train'])))
         print('Target domain :{}, Data size:{}'.format(self.target_domain, len(self.target_data['test'])))
-
-        self.model = torchvision.models.resnet50(pretrained=True)
-        self.model.fc = nn.Linear(self.model.fc.in_features, 31)
 
     def test(self, data_loader, criterion):
         self.model.eval()
@@ -426,6 +446,11 @@ class OfficeBaselineSolver(Solver):
             )
             print('Train Loss: {:.4f} Acc: {:.4f}\n'.format(train_loss, train_acc))
 
+            if train_acc >= best_train_acc:
+                best_train_acc = train_acc
+                best_train_loss = train_loss
+                self.save_model(model=self.model, path=self.model_saving_path['train'])
+
             if self.if_test:
                 test_loss, test_acc = self.test(
                     data_loader=self.data_loader['test'],
@@ -436,21 +461,10 @@ class OfficeBaselineSolver(Solver):
                     best_test_acc = test_acc
                     best_test_loss = test_loss
                     self.save_model(model=self.model, path=self.model_saving_path['test'])
+
+                self.add_log(epoch, train_acc, 0, test_acc, train_loss, 0, test_loss)
             else:
-                test_loss = test_acc = 0
-
-            if train_acc >= best_train_acc:
-                best_train_acc = train_acc
-                best_train_loss = train_loss
-                self.save_model(model=self.model, path=self.model_saving_path['train'])
-
-            self.add_log(epoch, train_acc, 0, test_acc, train_loss, 0, test_loss)
-
-            pd.DataFrame(
-                data=self.log,
-                columns=['model', 'source', 'target', 'epoch', 'train_acc', 'val_acc', 'test_acc', 'train_loss',
-                         'val_loss', 'test_loss']
-            ).to_csv(self.log_path, index=0)
+                self.add_log(epoch, train_acc, 0, 0, train_loss, 0, 0)
 
             print()
 
@@ -461,13 +475,3 @@ class OfficeBaselineSolver(Solver):
 
         if self.if_test:
             print('Best Test Acc: {:4f}\n'.format(best_test_acc))
-
-solver = OfficeBaselineSolver(
-    dataset_type='Office31',
-    source_domain='Amazon',
-    target_domain='Dslr',
-    cuda='cpu',
-    test_mode=True,
-)
-solver.solve()
-
