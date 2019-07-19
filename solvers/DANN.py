@@ -9,12 +9,12 @@ import sys
 from solvers.Solver import Solver
 
 
-class DigitsBaselineSolver(Solver):
+class DigitsDANNSolver(Solver):
     dataset_type = 'Digits'
 
     def __init__(self, source_domain, target_domain, cuda, pretrained=False, batch_size=32,
                  num_epochs=300, if_test=True, test_mode=False, num_workers=2):
-        super(DigitsBaselineSolver, self).__init__(
+        super(DigitsDANNSolver, self).__init__(
             source_domain=source_domain,
             target_domain=target_domain,
             cuda=cuda,

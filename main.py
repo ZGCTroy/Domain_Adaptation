@@ -17,26 +17,39 @@ parser.add_argument('--if_test', action='store_true', default=False)
 parser.add_argument('--cuda', type=str, default='cuda:0')
 
 
-parser.add_argument('--batch_size', type=int, default=36)
-parser.add_argument('--num_workers', type=int, default=4)
+parser.add_argument('--batch_size', type=int, default=32)
+parser.add_argument('--num_workers', type=int, default=2)
 parser.add_argument('--epochs', type=int, default=300)
 
 
 args = parser.parse_args()
 
 def main():
-    solver = OfficeBaselineSolver(
-        dataset_type = args.dataset,
-        source_domain = args.source,
-        target_domain = args.target,
-        cuda=args.cuda,
-        pretrained = args.pretrained,
-        test_mode = args.test_mode,
-        if_test= args.if_test,
-        batch_size = args.batch_size,
-        num_epochs = args.epochs,
-        num_workers = args.num_workers
-    )
+    if args.dataset in ['Office31','OfficeHome']:
+        solver = OfficeBaselineSolver(
+            dataset_type = args.dataset,
+            source_domain = args.source,
+            target_domain = args.target,
+            cuda=args.cuda,
+            pretrained = args.pretrained,
+            test_mode = args.test_mode,
+            if_test= args.if_test,
+            batch_size = args.batch_size,
+            num_epochs = args.epochs,
+            num_workers = args.num_workers
+        )
+    else:
+        solver = DigitsBaselineSolver(
+            source_domain=args.source,
+            target_domain=args.target,
+            cuda=args.cuda,
+            pretrained=args.pretrained,
+            test_mode=args.test_mode,
+            if_test=args.if_test,
+            batch_size=args.batch_size,
+            num_epochs=args.epochs,
+            num_workers=args.num_workers
+        )
 
     solver.solve()
 

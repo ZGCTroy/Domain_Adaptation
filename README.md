@@ -25,3 +25,10 @@ Baseline Resnet50 for Office-Home
 Add parser
 
 first run on server
+
+
+# 7月19日
+完成Solver类的设计，DigitsBaselineSolver OfficeBaselineSolver
+使用baseline在所有数据集上跑完
+
+DANN 参考https://github.com/CuthbertCai/pytorch_DANN/blob/master
