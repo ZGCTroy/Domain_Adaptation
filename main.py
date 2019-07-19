@@ -1,5 +1,5 @@
 import argparse
-from solvers.BaselineSolver import BaselineSolver
+from solvers.BaselineSolver import DigitsBaselineSolver, OfficeBaselineSolver
 
 import os
 print(os.getcwd())
@@ -7,7 +7,7 @@ os.chdir(os.getcwd())
 
 parser = argparse.ArgumentParser(description='Hello')
 
-parser.add_argument('--dataset',type=str,default='Office')
+parser.add_argument('--dataset',type=str,default='Office31')
 parser.add_argument('--source', type=str, default='Webcam')
 parser.add_argument('--target', type=str, default='Dslr')
 
@@ -25,7 +25,7 @@ parser.add_argument('--epochs', type=int, default=300)
 args = parser.parse_args()
 
 def main():
-    solver = BaselineSolver(
+    solver = OfficeBaselineSolver(
         dataset_type = args.dataset,
         source_domain = args.source,
         target_domain = args.target,

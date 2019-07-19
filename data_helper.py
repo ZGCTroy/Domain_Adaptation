@@ -1,16 +1,9 @@
-from torchvision import transforms, datasets
+from torchvision import datasets
 from torch.utils import data
 from torchvision.datasets.utils import download_url
 import os
-import zipfile
 from datasets import USPSDataset
 from transform import transform_for_Digits, transform_for_Office
-import os
-import gdown
-import requests
-import urllib
-
-os.chdir(os.getcwd())
 
 def _check_exists(self):
     return os.path.exists(os.path.join(self.root, self.training_file)) and \

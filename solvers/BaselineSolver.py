@@ -1,9 +1,14 @@
+
 from __future__ import print_function, division
+import os
+os.chdir('/home/zgc/BaseLine')
+print(os.getcwd())
+
 import torch
 import torch.nn as nn
 import torchvision
 import time
-from models.baseline import BaselineMU, BaselineStoM
+from .models.baseline import BaselineMU, BaselineStoM
 from data_helper import *
 import sys
 import pandas as pd
