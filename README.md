@@ -32,3 +32,16 @@ first run on server
 使用baseline在所有数据集上跑完
 
 DANN 参考https://github.com/CuthbertCai/pytorch_DANN/blob/master
+
+# 7月20日
+重构代码，使baseline达到论文效果
+
+# 7月21日
+成功重构代码，更正optimizer错误，使baseline达到了论文效果
+
+resnet = pretrained
+Adam -> SGD
+
+# 7月22日
+完成DANN，设计base mode  + ad model
+

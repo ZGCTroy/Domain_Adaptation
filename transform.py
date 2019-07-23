@@ -1,17 +1,15 @@
 from torchvision import transforms
 
+
 def transform_for_Digits(resize_size, Gray_to_RGB=False):
     T = {
         'train': [
             transforms.Resize(resize_size),
-            transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
-            transforms.Normalize((0.5,), (0.5,))
         ],
         'test': [
             transforms.Resize(resize_size),
             transforms.ToTensor(),
-            transforms.Normalize((0.5,), (0.5,))
         ]
     }
 
@@ -24,7 +22,8 @@ def transform_for_Digits(resize_size, Gray_to_RGB=False):
 
     return T
 
-def transform_for_Office(resize_size, crop_size):
+
+def transform_for_Office(resize_size=[256,256], crop_size=224):
     T = {
         'train': transforms.Compose([
             transforms.Resize(resize_size),
@@ -40,18 +39,4 @@ def transform_for_Office(resize_size, crop_size):
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
         ])
     }
-
-    # T = {
-    #     'train': transforms.Compose([
-    #         transforms.Resize(resize_size),
-    #         transforms.RandomCrop(crop_size),
-    #         transforms.RandomHorizontalFlip(),
-    #         transforms.ToTensor(),
-    #     ]),
-    #     'test': transforms.Compose([
-    #         transforms.Resize(resize_size),
-    #         transforms.CenterCrop(crop_size),
-    #         transforms.ToTensor(),
-    #     ])
-    # }
     return T
