@@ -11,7 +11,7 @@ class Solver():
     def __init__(self, dataset_type, source_domain, target_domain, cuda='cuda:0',
                  pretrained=False, batch_size=32,
                  num_epochs=999999, max_iter_num=999999, test_interval=500, test_mode=False, num_workers=2,
-                 clean_log=False):
+                 clean_log=False, lr=0.001, gamma=0.001):
         self.dataset_type = dataset_type
         self.source_domain = source_domain
         self.target_domain = target_domain
@@ -25,6 +25,8 @@ class Solver():
         self.cuda = cuda
         self.device = torch.device(self.cuda if torch.cuda.is_available() else "cpu")
         self.clean_log = clean_log
+        self.gamma = gamma
+        self.lr = lr
         self.model = None
         self.model_name = None
         self.scheduler = None
@@ -64,9 +66,7 @@ class Solver():
         self.logs_dir = ''
         self.models_checkpoints_dir = ''
         self.iter_num = 0
-        self.lr = 0.01
         self.optimizer_type = 'SGD'
-
 
     def cycle(self, iterable):
         while True:
@@ -147,20 +147,27 @@ class Solver():
 
     def set_optimizer(self):
         self.optimizer_type = 'SGD'
-
         self.lr = 0.001
+
+        if self.task in ['AtoW','WtoD','WtoA','DtoA']:
+            self.lr = 0.001
+            self.gamma = 0.001
 
         if self.task in ['AtoD', 'DtoW']:
             self.lr = 0.0003
+            self.gamma = 0.001
 
         if self.task in ['StoM']:
             self.lr = 0.03
+            self.gamma = 10
 
         if self.task in ['MtoU', 'UtoM']:
             self.lr = 0.02
+            self.gamma = 10
 
         if self.dataset_type == 'OfficeHome':
             self.lr = 0.001
+            self.gamma = 0.001
 
         self.optimizer = torch.optim.SGD(
             self.model.get_parameters(),
@@ -175,7 +182,8 @@ class Solver():
             self.source_data['train'],
             batch_size=self.batch_size,
             shuffle=True,
-            num_workers=self.num_workers
+            num_workers=self.num_workers,
+            drop_last=True
         )
         self.data_loader['source']['test'] = DataLoader(
             self.source_data['test'],
@@ -189,7 +197,7 @@ class Solver():
             batch_size=self.batch_size,
             shuffle=True,
             num_workers=self.num_workers,
-
+            drop_last=True
         )
 
         self.data_loader['target']['test'] = DataLoader(
@@ -199,14 +207,14 @@ class Solver():
             num_workers=self.num_workers,
         )
 
-    def update_optimizer(self, gamma=10, power=0.75, weight_decay=0.0005):
+    def update_optimizer(self, power=0.75, weight_decay=0.0005):
         """Decay learning rate by a factor of 0.1 every lr_decay_epoch epochs."""
         if self.num_epochs != 999999:
             p = self.epoch / self.num_epochs
         else:
             p = self.iter_num / self.max_iter_num
 
-        lr = self.lr * (1.0 + gamma * p) ** (-power)
+        lr = self.lr * (1.0 + self.gamma * p) ** (-power)
 
         for param_group in self.optimizer.param_groups:
             param_group['lr'] = lr * param_group['lr_mult']
