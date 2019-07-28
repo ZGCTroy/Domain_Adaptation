@@ -12,7 +12,7 @@ class BaselineSolver(Solver):
 
     def __init__(self, dataset_type, source_domain, target_domain, cuda, pretrained=False,
                  batch_size=32,
-                 num_epochs=99999, max_iter_num=99999999, test_interval=100, test_mode=False, num_workers=2,lr=0.001,gamma=0.001):
+                 num_epochs=99999, max_iter_num=99999999, test_interval=100, test_mode=False, num_workers=2,lr=0.001,gamma=10,optimizer_type='SGD'):
         super(BaselineSolver, self).__init__(
             dataset_type=dataset_type,
             source_domain=source_domain,
@@ -26,7 +26,8 @@ class BaselineSolver(Solver):
             test_mode=test_mode,
             num_workers=num_workers,
             lr=lr,
-            gamma=gamma
+            gamma=gamma,
+            optimizer_type=optimizer_type
         )
         self.model_name = 'Baseline'
 
@@ -42,6 +43,7 @@ class BaselineSolver(Solver):
 
         if self.pretrained:
             self.load_model(path=self.models_checkpoints_dir + '/' + self.model_name + '_best_train.pt')
+
         self.model = self.model.to(self.device)
 
     def test(self, data_loader):
@@ -68,9 +70,9 @@ class BaselineSolver(Solver):
 
             _, preds = torch.max(class_outputs, 1)
 
-            loss = criterion(class_outputs, labels)
+            # loss = criterion(class_outputs, labels)
 
-            total_loss += loss.item() * inputs.size(0)
+            # total_loss += loss.item() * inputs.size(0)
             corrects += (preds == labels.data).sum().item()
             processed_num += batch_size
 

@@ -33,11 +33,13 @@ def load_SVHN(root_dir):
     T = {
         'train': transforms.Compose([
             transforms.ToTensor(),
-            transforms.Normalize(mean=(0.5,), std=(0.5,))
+            transforms.Normalize(mean=[0.43777722, 0.4438628, 0.47288644], std=[0.19664814, 0.19963288, 0.19541258])
+            # transforms.Normalize(mean=(0.5,), std=(0.5,))
         ]),
         'test': transforms.Compose([
             transforms.ToTensor(),
-            transforms.Normalize(mean=(0.5,), std=(0.5,))
+            transforms.Normalize(mean=[0.4525405, 0.45260695, 0.46907398], std=[0.21789917, 0.22504489, 0.22678198])
+            # transforms.Normalize(mean=(0.5,), std=(0.5,))
         ])
     }
 
@@ -54,7 +56,7 @@ def load_SVHN(root_dir):
     return SVHN
 
 
-def load_USPS(root_dir, Gray_to_RGB=False):
+def load_USPS(root_dir):
     T = {
         'train': [
             transforms.ToPILImage()
@@ -64,18 +66,21 @@ def load_USPS(root_dir, Gray_to_RGB=False):
         ]
     }
 
-    T['train'].append(transforms.Resize([28, 28]))
-    T['test'].append(transforms.Resize([28, 28]))
+    T['train'].append(transforms.Resize([28, 28],interpolation=Image.BILINEAR))
+    T['test'].append(transforms.Resize([28, 28],interpolation=Image.BILINEAR))
 
     T['train'].append(transforms.ToTensor())
     T['test'].append(transforms.ToTensor())
 
-    if Gray_to_RGB:
-        T['train'].append(transforms.Lambda(lambda x: x.expand([3, -1, -1])))
-        T['test'].append(transforms.Lambda(lambda x: x.expand([3, -1, -1])))
+    # if Gray_to_RGB:
+    #     T['train'].append(transforms.Lambda(lambda x: x.expand([3, -1, -1])))
+    #     T['test'].append(transforms.Lambda(lambda x: x.expand([3, -1, -1])))
 
-    T['train'].append(transforms.Normalize(mean=(0.5,), std=(0.5,)))
-    T['test'].append(transforms.Normalize(mean=(0.5,), std=(0.5,)))
+    T['train'].append(transforms.Normalize(mean=(0.25466308,), std=(0.35181096,)))
+    T['test'].append(transforms.Normalize(mean=(0.26791447,), std=(0.3605367,)))
+
+    # T['train'].append(transforms.Normalize(mean=(0.5,), std=(0.5,)))
+    # T['test'].append(transforms.Normalize(mean=(0.5,), std=(0.5,)))
 
     USPS = {
         'train': USPSDataset(
@@ -106,8 +111,11 @@ def load_MNIST(root_dir, resize_size=28, Gray_to_RGB=False):
         T['train'].append(transforms.Lambda(lambda x: x.expand([3, -1, -1])))
         T['test'].append(transforms.Lambda(lambda x: x.expand([3, -1, -1])))
 
-    T['train'].append(transforms.Normalize(mean=(0.5,), std=(0.5,)))
-    T['test'].append(transforms.Normalize(mean=(0.5,), std=(0.5,)))
+    T['train'].append(transforms.Normalize(mean=(0.13065113,), std=(0.30767146,)))
+    T['test'].append(transforms.Normalize(mean=(0.13284597,), std=(0.30983892,)))
+
+    # T['train'].append(transforms.Normalize(mean=(0.5,), std=(0.5,)))
+    # T['test'].append(transforms.Normalize(mean=(0.5,), std=(0.5,)))
 
     MNIST = {
         'train': datasets.MNIST(
@@ -127,11 +135,11 @@ def cal_mean_and_std():
         transforms.ToTensor()
     ])
 
-    dset = load_USPS(root_dir='./data/Digits/USPS', Gray_to_RGB=True)
+    dset = load_USPS(root_dir='./data/Digits/USPS')
 
     # dset = load_MNIST(root_dir='./data/Digits/MNIST', Gray_to_RGB=True)
     data_loader = torch.utils.data.DataLoader(
-        dset['train'],
+        dset['test'],
         batch_size=128,
         shuffle=False,
         num_workers=0

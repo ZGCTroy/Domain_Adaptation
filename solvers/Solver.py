@@ -11,7 +11,7 @@ class Solver():
     def __init__(self, dataset_type, source_domain, target_domain, cuda='cuda:0',
                  pretrained=False, batch_size=32,
                  num_epochs=999999, max_iter_num=999999, test_interval=500, test_mode=False, num_workers=2,
-                 clean_log=False, lr=0.001, gamma=0.001):
+                 clean_log=False, lr=0.001, gamma=10, optimizer_type='SGD'):
         self.dataset_type = dataset_type
         self.source_domain = source_domain
         self.target_domain = target_domain
@@ -27,6 +27,7 @@ class Solver():
         self.clean_log = clean_log
         self.gamma = gamma
         self.lr = lr
+        self.cur_lr = lr
         self.model = None
         self.model_name = None
         self.scheduler = None
@@ -42,6 +43,7 @@ class Solver():
         }
 
         self.log = {
+            'time': [],
             'iter': [],
             'epoch': [],
             'source': [],
@@ -66,12 +68,7 @@ class Solver():
         self.logs_dir = ''
         self.models_checkpoints_dir = ''
         self.iter_num = 0
-        self.optimizer_type = 'SGD'
-
-    def cycle(self, iterable):
-        while True:
-            for x in iterable:
-                yield x
+        self.optimizer_type = optimizer_type
 
     def test(self, data_loader):
         raise NotImplementedError
@@ -135,47 +132,59 @@ class Solver():
                 self.add_log(epoch, train_acc, val_acc, test_acc, train_loss, val_loss, test_loss)
                 self.save_log()
 
+            print('Current Best Test Acc : {:4f}'.format(best_test_acc))
             if self.iter_num >= self.max_iter_num:
                 break
+            print('Optimizer : ', self.optimizer_type, 'Cur lr : ', self.cur_lr, '\n\n')
 
         time_elapsed = time.time() - since
         print('Training complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
-        print('Best Val Acc : {:4f}, Test Acc : {:4f}\n'.format(best_val_acc, best_test_acc))
+        print('Best Val Acc : {:4f}, Test Acc : {:4f}'.format(best_val_acc, best_test_acc))
 
     def set_model(self):
         raise NotImplementedError
 
     def set_optimizer(self):
-        self.optimizer_type = 'SGD'
-        self.lr = 0.001
-
-        if self.task in ['AtoW','WtoD','WtoA','DtoA']:
+        if self.optimizer_type == 'Adam':
+            self.optimizer_type = 'Adam'
+            self.optimizer = torch.optim.Adam(
+                params=self.model.get_parameters(),
+                lr=self.lr,
+                weight_decay=0.0005
+            )
+        else:
             self.lr = 0.001
-            self.gamma = 0.001
-
-        if self.task in ['AtoD', 'DtoW']:
-            self.lr = 0.0003
-            self.gamma = 0.001
-
-        if self.task in ['StoM']:
-            self.lr = 0.03
             self.gamma = 10
 
-        if self.task in ['MtoU', 'UtoM']:
-            self.lr = 0.02
-            self.gamma = 10
+            if self.task in ['AtoD', 'DtoW']:
+                self.lr = 0.0003
 
-        if self.dataset_type == 'OfficeHome':
-            self.lr = 0.001
-            self.gamma = 0.001
+            self.optimizer_type = 'SGD'
+            self.optimizer = torch.optim.SGD(
+                self.model.get_parameters(),
+                lr=self.lr,
+                momentum=0.9,
+                weight_decay=0.0005,
+                nesterov=True
+            )
 
-        self.optimizer = torch.optim.SGD(
-            self.model.get_parameters(),
-            lr=self.lr,
-            momentum=0.9,
-            weight_decay=0.0005,
-            nesterov=True
-        )
+    def update_optimizer(self, power=0.75, weight_decay=0.0005):
+        """Decay learning rate by a factor of 0.1 every lr_decay_epoch epochs."""
+        if self.optimizer_type == 'SGD':
+            if self.num_epochs != 999999:
+                p = self.epoch / self.num_epochs
+            else:
+                p = self.iter_num / self.max_iter_num
+
+            lr = self.lr * (1.0 + self.gamma * p) ** (-power)
+        else:
+            lr = self.lr
+
+        self.cur_lr = lr
+
+        for param_group in self.optimizer.param_groups:
+            param_group['lr'] = lr * param_group['lr_mult']
+            param_group['weight_decay'] = weight_decay * param_group['decay_mult']
 
     def set_dataloader(self):
         self.data_loader['source']['train'] = DataLoader(
@@ -207,19 +216,6 @@ class Solver():
             num_workers=self.num_workers,
         )
 
-    def update_optimizer(self, power=0.75, weight_decay=0.0005):
-        """Decay learning rate by a factor of 0.1 every lr_decay_epoch epochs."""
-        if self.num_epochs != 999999:
-            p = self.epoch / self.num_epochs
-        else:
-            p = self.iter_num / self.max_iter_num
-
-        lr = self.lr * (1.0 + self.gamma * p) ** (-power)
-
-        for param_group in self.optimizer.param_groups:
-            param_group['lr'] = lr * param_group['lr_mult']
-            param_group['weight_decay'] = weight_decay * param_group['decay_mult']
-
     def load_dataset(self):
         # TODO 1 : Load Dataset
         if self.dataset_type == 'Digits':
@@ -249,8 +245,12 @@ class Solver():
             self.source_data = load_Office('./data/OfficeHome', domain=self.source_domain)
             self.target_data = load_Office('./data/OfficeHome', domain=self.target_domain)
 
-        print('Source train domain :{}, Data size:{}'.format(self.source_domain, len(self.source_data['train'])))
-        print('Target test domain :{}, Data size:{}'.format(self.target_domain, len(self.target_data['test'])))
+        print('Source domain :{}, Train Data size:{} Test Data size:{}'.format(self.source_domain,
+                                                                               len(self.source_data['train']),
+                                                                               len(self.source_data['test'])))
+        print('Target domain :{}, Train Data size:{} Test Data size:{}'.format(self.target_domain,
+                                                                               len(self.target_data['train']),
+                                                                               len(self.target_data['test'])))
 
     def solve(self):
         # TODO 1 : load dataset
@@ -281,6 +281,7 @@ class Solver():
             self.train(num_epochs=self.num_epochs)
 
     def add_log(self, epoch, train_acc, val_acc, test_acc, train_loss, val_loss, test_loss):
+        self.log['time'].append(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
         self.log['iter'].append(self.iter_num)
         self.log['epoch'].append(epoch)
         self.log['source'].append(self.source_domain)
@@ -288,7 +289,7 @@ class Solver():
         self.log['model'].append(self.model_name)
         self.log['optimizer'].append(self.optimizer_type)
         self.log['batch_size'].append(self.batch_size)
-        self.log['lr'].append(self.lr)
+        self.log['lr'].append(self.cur_lr)
         self.log['train_acc'].append('%.4f' % train_acc)
         self.log['val_acc'].append('%.4f' % val_acc)
         self.log['test_acc'].append('%.4f' % test_acc)
@@ -301,7 +302,7 @@ class Solver():
 
         log = pd.DataFrame(
             data=self.log,
-            columns=['iter', 'epoch', 'source', 'target', 'model', 'optimizer', 'batch_size', 'lr', 'train_acc',
+            columns=['time', 'iter', 'epoch', 'source', 'target', 'model', 'optimizer', 'batch_size', 'lr', 'train_acc',
                      'val_acc',
                      'test_acc',
                      'train_loss', 'val_loss', 'test_loss']

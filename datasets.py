@@ -9,7 +9,6 @@ class USPSDataset(data.Dataset):
     def __init__(self, root_dir, train=True, transform=None):
         self.transform = transform
         self.root_dir = root_dir
-        self.target_transform = transforms.ToTensor()
         with h5py.File(os.path.join(root_dir,'usps.h5'), 'r') as hf:
             if train:
                 d = hf.get('train')

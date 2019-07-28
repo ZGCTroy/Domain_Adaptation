@@ -7,11 +7,14 @@ from solvers.Solver import Solver
 from network import MT
 import numpy as np
 from torch.nn import functional as F
+from torchvision import transforms
 
-class OldWeightEMA (object):
+
+class OldWeightEMA(object):
     """
     Exponential moving average weight optimizer for mean teacher model
     """
+
     def __init__(self, target_net, source_net, alpha=0.999):
         self.target_params = list(target_net.parameters())
         self.source_params = list(source_net.parameters())
@@ -33,7 +36,8 @@ class MTSolver(Solver):
                  pretrained=False,
                  batch_size=36,
                  num_epochs=9999, max_iter_num=9999999, test_interval=500, test_mode=False, num_workers=2,
-                 clean_log=False,lr=0.001,gamma=10, loss_weight=3.0):
+                 clean_log=False, lr=0.001, gamma=10, loss_weight=3.0, optimizer_type='SGD', confidence_thresh=0.968,
+                 rampup_epoch=80):
         super(MTSolver, self).__init__(
             dataset_type=dataset_type,
             source_domain=source_domain,
@@ -48,22 +52,30 @@ class MTSolver(Solver):
             num_workers=num_workers,
             clean_log=clean_log,
             lr=lr,
-            gamma=gamma
+            gamma=gamma,
+            optimizer_type=optimizer_type
         )
         self.model_name = 'MT'
         self.iter_num = 0
-        self.rampup = 80
-        self.rampup_value = 0.0
         self.loss_weight = loss_weight
+        self.confidence_thresh = confidence_thresh
+        self.rampup_epoch = rampup_epoch
+        self.rampup_value = 0
 
     def set_model(self):
         if self.dataset_type == 'Digits':
+            self.confidence_thresh = 0.968
             if self.task in ['MtoU', 'UtoM']:
                 self.model = MT(n_classes=self.n_classes, base_model='DigitsMU')
             if self.task in ['StoM']:
                 self.model = MT(n_classes=self.n_classes, base_model='DigitsStoM')
 
-        if self.dataset_type in ['Office31', 'OfficeHome']:
+        if self.dataset_type == 'Office31':
+            self.confidence_thresh = 0.70
+            self.model = MT(n_classes=self.n_classes, base_model='ResNet50')
+
+        if self.dataset_type == 'OfficeHome':
+            self.confidence_thresh = 0.30
             self.model = MT(n_classes=self.n_classes, base_model='ResNet50')
 
         if self.pretrained:
@@ -77,43 +89,73 @@ class MTSolver(Solver):
         total_loss = 0
         corrects = 0
         data_num = len(data_loader.dataset)
-        batch_size = data_loader.batch_size
         processed_num = 0
 
         for inputs, labels in data_loader:
             sys.stdout.write('\r{}/{}'.format(processed_num, data_num))
             sys.stdout.flush()
 
+            #inputs = self.augment(inputs, T=False, F=False)
             inputs = inputs.to(self.device)
             labels = labels.to(self.device)
 
             # print('inputs ',inputs.size())
             # print('labels ',labels.size())
 
-            class_outputs = self.model(inputs, test_mode=True)
+            class_outputs = self.model(source_x=inputs, test_mode=True)
 
             # print('class outputs ',class_outputs.size())
 
             _, preds = torch.max(class_outputs, 1)
             # print('preds ',preds.size())
 
-            loss = nn.CrossEntropyLoss()(class_outputs, labels)
+            # loss = nn.CrossEntropyLoss()(class_outputs, labels)
 
-            total_loss += loss.item() * inputs.size(0)
+            # total_loss += loss.item() * labels.size()[0]
             corrects += (preds == labels.data).sum().item()
-            processed_num += batch_size
+            processed_num += labels.size()[0]
 
-        acc = corrects / data_num
-        average_loss = total_loss / data_num
-        print('\nData size = {} , corrects = {}'.format(data_num, corrects))
+        acc = corrects / processed_num
+        average_loss = total_loss / processed_num
+        print('\nData size = {} , corrects = {}'.format(processed_num, corrects))
 
         return average_loss, acc
 
     def set_optimizer(self):
-        super(MTSolver,self).set_optimizer()
+        super(MTSolver, self).set_optimizer()
         self.teacher_optimizer = OldWeightEMA(self.model.teacher, self.model.student)
 
+    def compute_aug_loss(self, stu_out, tea_out):
+
+        # conf_tea = torch.max(tea_out, 1)[0]
+        # unsup_mask = (conf_tea > self.confidence_thresh).float()
+        # unsup_mask_rate = unsup_mask.sum() / len(unsup_mask)
+
+        d_aug_loss = stu_out - tea_out
+        aug_loss = d_aug_loss * d_aug_loss
+        aug_loss = aug_loss.mean(dim=1)
+
+        # unsup_loss = (aug_loss * unsup_mask).mean()
+        # return unsup_loss, unsup_mask_rate
+
+        return aug_loss.mean() * self.rampup_value
+
+    def TF(self, x, T=True, F=True):
+        # x = transforms.ToPILImage()(x)
+        if T:
+            x = transforms.RandomAffine(degrees=0, translate=(0.1, 0))(x)
+        if F:
+            x = transforms.RandomHorizontalFlip(0.5)(x)
+        # x = transforms.ToTensor()(x)
+
+        return x
+
+    def augment(self, x, T=True, F=True):
+        tmp = torch.Tensor(x) + torch.randn_like(x) * 0.1
+        return tmp
+
     def train_one_epoch(self):
+
         since = time.time()
         self.model.train()
 
@@ -123,17 +165,16 @@ class MTSolver(Solver):
         total_target_num = len(self.data_loader['target']['train'].dataset)
         processed_target_num = 0
         total_source_num = 0
+        # CT_pass_rate = 0
 
-        source_iter = iter(self.cycle(self.data_loader['source']['train']))
-
-        if self.epoch < self.rampup:
-            p = max(0.0, float(self.epoch)) / float(self.rampup)
+        if self.epoch < self.rampup_epoch:
+            p = max(0.0, float(self.epoch)) / float(self.rampup_epoch)
             p = 1.0 - p
             self.rampup_value = np.exp(-p * p * 5.0)
         else:
             self.rampup_value = 1.0
+        print('ramup value = ',self.rampup_value)
 
-        print(self.rampup_value)
         for target_inputs, target_labels in self.data_loader['target']['train']:
             sys.stdout.write('\r{}/{}'.format(processed_target_num, total_target_num))
             sys.stdout.flush()
@@ -142,36 +183,32 @@ class MTSolver(Solver):
 
             self.optimizer.zero_grad()
 
-            # TODO 1 : Train
-            target_x1 = target_inputs
-            target_x2 = torch.Tensor(target_inputs)
+            # TODO 1 : Target Train
 
-            source_inputs, source_labels = next(source_iter)
+            target_x1 = self.augment(target_inputs, T=False, F=False).to(self.device)
+            target_x2 = self.augment(target_inputs, T=False, F=False).to(self.device)
 
-            target_x1 = target_x1.to(self.device)
-            target_x2 = target_x2.to(self.device)
-            source_x = source_inputs.to(self.device)
+            target_y1, target_y2 = self.model(target_x1=target_x1, target_x2=target_x2, test_mode=False, is_source=False)
 
-            source_y, target_y1, target_y2 = self.model(source_x, target_x1, target_x2, test_mode=False)
             target_y1 = F.softmax(target_y1, dim=1)
             target_y2 = F.softmax(target_y2, dim=1)
 
-            #
-            # print(source_y.size(),source_y.dtype)
-            # print(target_y1.size(),target_y1.dtype)
-            # print(target_y2.size(),target_y2.dtype)
+            aug_loss = self.compute_aug_loss(target_y1, target_y2)
 
-            # TODO 3 : LOSS
+            # TODO 1 : Source Train
+
+            source_iter = iter(self.data_loader['source']['train'])
+            source_inputs, source_labels = next(source_iter)
+            source_inputs = self.augment(source_inputs,T=False,F=False).to(self.device)
+
+            source_y = self.model(source_x=source_inputs, test_mode=False, is_source=True)
             source_labels = source_labels.to(self.device)
 
             class_loss = nn.CrossEntropyLoss()(source_y, source_labels)
 
-            squared_difference = target_y1 - target_y2
-            squared_difference = squared_difference * squared_difference
-            squared_difference = squared_difference.mean(dim=1)
-            squared_difference = squared_difference.mean() * self.rampup_value
+            # TODO 3 : LOSS
 
-            loss = class_loss + self.loss_weight * squared_difference
+            loss = class_loss + self.loss_weight * aug_loss
 
             loss.backward()
 
@@ -187,9 +224,11 @@ class MTSolver(Solver):
             self.iter_num += 1
 
         acc = source_corrects / total_source_num
-        average_loss = total_loss / total_target_num
+        average_loss = total_loss / total_source_num
 
         print()
         print('\nData size = {} , corrects = {}'.format(total_source_num, source_corrects))
+        # print('CT pass rate : ', CT_pass_rate)
         print('Using {:4f}'.format(time.time() - since))
+
         return average_loss, acc

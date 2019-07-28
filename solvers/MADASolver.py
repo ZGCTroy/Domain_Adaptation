@@ -4,18 +4,18 @@ import time
 from data_helper import *
 import sys
 from solvers.Solver import Solver
-from network import DANN
+from network import MADA
 import numpy as np
 
 
-class DANNSolver(Solver):
+class MADASolver(Solver):
 
     def __init__(self, dataset_type, source_domain, target_domain, cuda='cuda:0',
                  pretrained=False,
                  batch_size=32,
                  num_epochs=9999, max_iter_num=9999999, test_interval=500, test_mode=False, num_workers=2,
                  clean_log=False, lr=0.001, gamma=10, optimizer_type='SGD'):
-        super(DANNSolver, self).__init__(
+        super(MADASolver, self).__init__(
             dataset_type=dataset_type,
             source_domain=source_domain,
             target_domain=target_domain,
@@ -32,8 +32,9 @@ class DANNSolver(Solver):
             gamma=gamma,
             optimizer_type=optimizer_type
         )
-        self.model_name = 'DANN'
+        self.model_name = 'MADA'
         self.iter_num = 0
+        self.class_weight = None
 
     def get_alpha(self, delta=10.0):
         if self.num_epochs != 999999:
@@ -46,12 +47,12 @@ class DANNSolver(Solver):
     def set_model(self):
         if self.dataset_type == 'Digits':
             if self.task in ['MtoU', 'UtoM']:
-                self.model = DANN(n_classes=self.n_classes, base_model='DigitsMU')
+                self.model = MADA(n_classes=self.n_classes, base_model='DigitsMU')
             if self.task in ['StoM']:
-                self.model = DANN(n_classes=self.n_classes, base_model='DigitsStoM')
+                self.model = MADA(n_classes=self.n_classes, base_model='DigitsStoM')
 
         if self.dataset_type in ['Office31', 'OfficeHome']:
-            self.model = DANN(n_classes=self.n_classes, base_model='ResNet50')
+            self.model = MADA(n_classes=self.n_classes, base_model='ResNet50')
 
         if self.pretrained:
             self.load_model(path=self.models_checkpoints_dir + '/' + self.model_name + '_best_train.pt')
@@ -89,6 +90,12 @@ class DANNSolver(Solver):
             corrects += (preds == labels.data).sum().item()
             processed_num += labels.size()[0]
 
+            # self.model.train(False)
+            # self.class_weight = torch.mean(nn.Softmax(dim=1)(class_outputs), 0)
+            # self.class_weight = (self.class_weight / torch.mean(self.class_weight))
+            # self.class_weight = self.class_weight.view(-1)
+            # self.class_weight = self.class_weight.detach()
+
         acc = corrects / processed_num
         average_loss = total_loss / processed_num
         print('\nData size = {} , corrects = {}'.format(processed_num, corrects))
@@ -106,6 +113,9 @@ class DANNSolver(Solver):
         processed_target_num = 0
         total_source_num = 0
 
+        # class_criterion = nn.CrossEntropyLoss(weight=self.class_weight.view(-1))
+        class_criterion = nn.CrossEntropyLoss()
+
         alpha = 0
         for target_inputs, target_labels in self.data_loader['target']['train']:
             sys.stdout.write('\r{}/{}'.format(processed_target_num, total_target_num))
@@ -120,23 +130,30 @@ class DANNSolver(Solver):
             # TODO 1 : Target Train
 
             target_inputs = target_inputs.to(self.device)
-            target_domain_outputs = self.model(target_inputs, alpha=alpha, test_mode=False, is_source=False)
-            target_domain_labels = torch.ones((target_labels.size()[0], 1), device=self.device)
-            target_domain_loss = nn.BCELoss()(target_domain_outputs, target_domain_labels)
+
+            target_domain_outputs, target_class_outputs = self.model(target_inputs, alpha=alpha)
+
+            target_domain_labels = torch.ones((target_labels.size()[0] * self.n_classes, 1), device=self.device)
+            target_domain_outputs = target_domain_outputs * nn.Softmax(dim=1)(target_class_outputs)
+            target_domain_outputs = nn.Sigmoid()(target_domain_outputs)
+
+            target_domain_loss = nn.BCELoss()(target_domain_outputs.view(-1), target_domain_labels.view(-1))
 
             # TODO 2 : Source Train
 
             source_iter = iter(self.data_loader['source']['train'])
             source_inputs, source_labels = next(source_iter)
+
             source_inputs = source_inputs.to(self.device)
+            source_domain_outputs, source_class_outputs = self.model(source_inputs, alpha=alpha)
 
-            source_domain_outputs, source_class_outputs = self.model(source_inputs, alpha=alpha, test_mode=False,
-                                                                     is_source=True)
             source_labels = source_labels.to(self.device)
-            source_class_loss = nn.CrossEntropyLoss()(source_class_outputs, source_labels)
+            source_class_loss = class_criterion(source_class_outputs, source_labels)
 
-            source_domain_labels = torch.zeros((source_labels.size()[0], 1), device=self.device)
-            source_domain_loss = nn.BCELoss()(source_domain_outputs, source_domain_labels)
+            source_domain_labels = torch.zeros((source_labels.size()[0] * self.n_classes, 1), device=self.device)
+            source_domain_outputs = source_domain_outputs * nn.Softmax(dim=1)(source_class_outputs)
+            source_domain_outputs = nn.Sigmoid()(source_domain_outputs)
+            source_domain_loss = nn.BCELoss()(source_domain_outputs.view(-1), source_domain_labels.view(-1))
 
             # TODO 3 : LOSS
 
@@ -160,5 +177,5 @@ class DANNSolver(Solver):
         print()
         print('\nData size = {} , corrects = {}'.format(total_source_num, source_corrects))
         print('Using {:4f}'.format(time.time() - since))
-        print('Alpha = ',alpha)
+        print('Alpha = ', alpha)
         return average_loss, acc

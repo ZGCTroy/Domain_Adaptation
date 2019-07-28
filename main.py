@@ -2,6 +2,8 @@ import argparse
 from solvers.BaselineSolver import BaselineSolver
 from solvers.DANNSolver import DANNSolver
 from solvers.MTSolver import MTSolver
+from solvers.MCDSolver import MCDSolver
+from solvers.MADASolver import MADASolver
 import os
 
 print(os.getcwd())
@@ -13,6 +15,7 @@ parser.add_argument('--model', type=str, default='DANN')
 parser.add_argument('--dataset', type=str, default='Office31')
 parser.add_argument('--source', type=str, default='Webcam')
 parser.add_argument('--target', type=str, default='Dslr')
+parser.add_argument('--optimizer', type=str, default='SGD')
 
 parser.add_argument('--test_mode', action='store_true', default=False)
 parser.add_argument('--pretrained', action='store_true', default=False)
@@ -25,7 +28,7 @@ parser.add_argument('--epochs', type=int, default=999999)
 parser.add_argument('--iterations', type=int, default=999999)
 parser.add_argument('--test_interval', type=int, default=500)
 parser.add_argument('--lr', type=float, default=0.001)
-parser.add_argument('--gamma', type=float, default=0.001)
+parser.add_argument('--gamma', type=float, default=10)
 
 args = parser.parse_args()
 
@@ -47,7 +50,8 @@ def main():
             max_iter_num=args.iterations,
             num_workers=args.num_workers,
             lr=args.lr,
-            gamma=args.gamma
+            gamma=args.gamma,
+            optimizer_type=args.optimizer
         )
 
     if args.model == 'DANN':
@@ -64,7 +68,8 @@ def main():
             max_iter_num=args.iterations,
             num_workers=args.num_workers,
             lr = args.lr,
-            gamma=args.gamma
+            gamma=args.gamma,
+            optimizer_type=args.optimizer
         )
 
     if args.model == 'MT':
@@ -81,7 +86,44 @@ def main():
             max_iter_num=args.iterations,
             num_workers=args.num_workers,
             lr=args.lr,
-            gamma=args.gamma
+            gamma=args.gamma,
+            optimizer_type=args.optimizer
+        )
+
+    if args.model == 'MCD':
+        solver = MCDSolver(
+            dataset_type=args.dataset,
+            source_domain=args.source,
+            target_domain=args.target,
+            cuda=args.cuda,
+            pretrained=args.pretrained,
+            test_mode=args.test_mode,
+            batch_size=args.batch_size,
+            num_epochs=args.epochs,
+            test_interval=args.test_interval,
+            max_iter_num=args.iterations,
+            num_workers=args.num_workers,
+            lr=args.lr,
+            gamma=args.gamma,
+            optimizer_type=args.optimizer
+        )
+
+    if args.model == 'MADA':
+        solver = MADASolver(
+            dataset_type=args.dataset,
+            source_domain=args.source,
+            target_domain=args.target,
+            cuda=args.cuda,
+            pretrained=args.pretrained,
+            test_mode=args.test_mode,
+            batch_size=args.batch_size,
+            num_epochs=args.epochs,
+            test_interval=args.test_interval,
+            max_iter_num=args.iterations,
+            num_workers=args.num_workers,
+            lr=args.lr,
+            gamma=args.gamma,
+            optimizer_type=args.optimizer
         )
 
     solver.solve()
