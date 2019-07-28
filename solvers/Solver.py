@@ -153,12 +153,6 @@ class Solver():
                 weight_decay=0.0005
             )
         else:
-            self.lr = 0.001
-            self.gamma = 10
-
-            if self.task in ['AtoD', 'DtoW']:
-                self.lr = 0.0003
-
             self.optimizer_type = 'SGD'
             self.optimizer = torch.optim.SGD(
                 self.model.get_parameters(),
@@ -192,7 +186,6 @@ class Solver():
             batch_size=self.batch_size,
             shuffle=True,
             num_workers=self.num_workers,
-            drop_last=True
         )
         self.data_loader['source']['test'] = DataLoader(
             self.source_data['test'],
@@ -206,7 +199,6 @@ class Solver():
             batch_size=self.batch_size,
             shuffle=True,
             num_workers=self.num_workers,
-            drop_last=True
         )
 
         self.data_loader['target']['test'] = DataLoader(

@@ -134,9 +134,9 @@ class MADASolver(Solver):
             target_domain_outputs, target_class_outputs = self.model(target_inputs, alpha=alpha)
 
             target_domain_labels = torch.ones((target_labels.size()[0] * self.n_classes, 1), device=self.device)
-            target_domain_outputs = target_domain_outputs * nn.Softmax(dim=1)(target_class_outputs)
-            target_domain_outputs = nn.Sigmoid()(target_domain_outputs)
-
+            #
+            # print(target_domain_outputs.view(-1).size())
+            # print(target_domain_labels.view(-1).size())
             target_domain_loss = nn.BCELoss()(target_domain_outputs.view(-1), target_domain_labels.view(-1))
 
             # TODO 2 : Source Train
@@ -151,8 +151,7 @@ class MADASolver(Solver):
             source_class_loss = class_criterion(source_class_outputs, source_labels)
 
             source_domain_labels = torch.zeros((source_labels.size()[0] * self.n_classes, 1), device=self.device)
-            source_domain_outputs = source_domain_outputs * nn.Softmax(dim=1)(source_class_outputs)
-            source_domain_outputs = nn.Sigmoid()(source_domain_outputs)
+
             source_domain_loss = nn.BCELoss()(source_domain_outputs.view(-1), source_domain_labels.view(-1))
 
             # TODO 3 : LOSS

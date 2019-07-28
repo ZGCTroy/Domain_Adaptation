@@ -54,8 +54,8 @@ def plot_Digits():
     plt.grid(linestyle='--')
     plt.ylabel('Accuracy on Target Domain')
     plt.xlabel('Task')
-    markers = ['^', '.', 'p','*']
-    models = ['Baseline', 'DANN','MT','MCD']
+    markers = ['^', '.', 'p','*','+']
+    models = ['Baseline', 'DANN','MT','MCD','MADA']
     i = -1
     for model in models:
         i += 1
@@ -84,8 +84,8 @@ def plot_Office31():
     plt.grid(linestyle='--')
     plt.ylabel('Accuracy on Target Domain')
     plt.xlabel('Task')
-    markers = ['^', '.', 'p','*']
-    models = ['Baseline', 'DANN', 'MT','MCD']
+    markers = ['^', '.', 'p','*','+']
+    models = ['Baseline', 'DANN', 'MT','MCD','MADA']
     i = -1
     for model in models:
         i += 1

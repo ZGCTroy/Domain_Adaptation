@@ -175,15 +175,18 @@ class AdversarialNetwork(nn.Module):
             nn.ReLU(),
             nn.Dropout(0.5),
             nn.Linear(hidden_size, output_num),
-            #nn.Sigmoid()
+            # nn.Sigmoid()
         )
         if sigmoid:
             self.discriminator.add_module(name='sigmoid', module=nn.Sigmoid())
+
         self.output_num = output_num
 
     def forward(self, x, alpha):
         x = ReverseLayerF.apply(x, alpha)
+
         y = self.discriminator(x)
+
         return y
 
     def get_parameters(self):
@@ -261,30 +264,25 @@ class DANN(nn.Module):
 
         if base_model == 'ResNet50':
             self.base_model = ResNet50(n_classes=n_classes, pretrained=pretrained)
-            self.domain_classifier = AdversarialNetwork(
-                in_feature=self.base_model.features_output_size,
-                hidden_size=1024,
-                lr_mult=10,
-                decay_mult=2
-            )
+            self.lr_mult = 10
+            self.decay_mult = 2
 
         if base_model == 'DigitsStoM':
             self.base_model = DigitsStoM(n_classes=n_classes)
-            self.domain_classifier = AdversarialNetwork(
-                in_feature=self.base_model.features_output_size,
-                hidden_size=1024,
-                lr_mult=1,
-                decay_mult=1
-            )
+            self.lr_mult = 1
+            self.decay_mult = 1
 
         if base_model == 'DigitsMU':
             self.base_model = DigitsMU(n_classes=n_classes)
-            self.domain_classifier = AdversarialNetwork(
-                in_feature=self.base_model.features_output_size,
-                hidden_size=1024,
-                lr_mult=1,
-                decay_mult=1
-            )
+            self.lr_mult = 1
+            self.decay_mult = 1
+
+        self.domain_classifier = AdversarialNetwork(
+            in_feature=self.base_model.features_output_size,
+            hidden_size=1024,
+            lr_mult=self.lr_mult,
+            decay_mult=self.decay_mult
+        )
 
     def forward(self, x, alpha=1.0, test_mode=False, is_source=True):
         if test_mode:
@@ -419,6 +417,39 @@ class MCD(nn.Module):
         return parameters
 
 
+class SmallAdversarialNetwork(nn.Module):
+    def __init__(self, in_feature, hidden_size, lr_mult=10, decay_mult=2, output_num=1, sigmoid=True):
+        super(SmallAdversarialNetwork, self).__init__()
+        self.in_feature = in_feature
+        self.hidden_size = hidden_size
+        self.lr_mult = lr_mult
+        self.decay_mult = decay_mult
+
+        self.discriminator = nn.Sequential(
+            nn.Linear(in_feature, 1024),
+            nn.ReLU(),
+            nn.Linear(1024,output_num)
+            # nn.Sigmoid()
+        )
+        if sigmoid:
+            self.discriminator.add_module(name='sigmoid', module=nn.Sigmoid())
+
+        self.output_num = output_num
+
+    def forward(self, x, alpha):
+        x = ReverseLayerF.apply(x, alpha)
+
+        y = self.discriminator(x)
+
+        return y
+
+    def get_parameters(self):
+        parameters = [
+            {"params": self.discriminator.parameters(), "lr_mult": self.lr_mult, 'decay_mult': self.decay_mult}
+        ]
+        return parameters
+
+
 class MADA(nn.Module):
     def __init__(self, n_classes, base_model, pretrained=True):
         super(MADA, self).__init__()
@@ -441,14 +472,18 @@ class MADA(nn.Module):
             self.lr_mult = 1
             self.decay_mult = 1
 
-        self.domain_classifier = AdversarialNetwork(
-            in_feature=self.base_model.features_output_size,
-            hidden_size=1024,
-            lr_mult=self.lr_mult,
-            decay_mult=self.decay_mult,
-            output_num=n_classes,
-            sigmoid=False
-        )
+        self.domain_classifiers = nn.ModuleList()
+        for i in range(n_classes):
+            self.domain_classifiers.append(
+                AdversarialNetwork(
+                    in_feature=self.base_model.features_output_size,
+                    hidden_size=1024,
+                    lr_mult=self.lr_mult,
+                    decay_mult=self.decay_mult,
+                    output_num=1,
+                    sigmoid=True
+                )
+            )
 
     def forward(self, x, alpha=1.0, test_mode=False):
         if test_mode:
@@ -457,12 +492,26 @@ class MADA(nn.Module):
 
         features, class_outputs = self.base_model(x, get_features=True, get_class_outputs=True)
 
-        domain_outputs = self.domain_classifier(features, alpha=alpha)
+        softmax_class_outputs = nn.Softmax(dim=1)(class_outputs)
+
+        i = -1
+        domain_outputs = []
+        for ad in self.domain_classifiers:
+            i += 1
+            weighted_features = softmax_class_outputs[:, i].view(-1, 1) * features
+            if i == 0:
+                domain_outputs = ad(weighted_features, alpha=alpha)
+            else:
+                domain_outputs = torch.cat([domain_outputs, ad(weighted_features, alpha=alpha)], dim=1)
 
         return domain_outputs, class_outputs
 
     def get_parameters(self):
-        return self.base_model.get_parameters() + self.domain_classifier.get_parameters()
+        parameters = self.base_model.get_parameters()
+        for ad in self.domain_classifiers:
+            parameters += ad.get_parameters()
+
+        return parameters
 
 
 def main():

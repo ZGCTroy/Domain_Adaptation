@@ -61,7 +61,6 @@ class DANNSolver(Solver):
     def test(self, data_loader):
         self.model.eval()
 
-        total_loss = 0
         corrects = 0
         data_num = len(data_loader.dataset)
         processed_num = 0
@@ -73,24 +72,15 @@ class DANNSolver(Solver):
             inputs = inputs.to(self.device)
             labels = labels.to(self.device)
 
-            # print('inputs ',inputs.size())
-            # print('labels ',labels.size())
-
             class_outputs = self.model(inputs, test_mode=True)
 
-            # print('class outputs ',class_outputs.size())
-
             _, preds = torch.max(class_outputs, 1)
-            # print('preds ',preds.size())
 
-            # loss = nn.CrossEntropyLoss()(class_outputs, labels)
-
-            # total_loss += loss.item() * labels.size()[0]
             corrects += (preds == labels.data).sum().item()
             processed_num += labels.size()[0]
 
         acc = corrects / processed_num
-        average_loss = total_loss / processed_num
+        average_loss = 0
         print('\nData size = {} , corrects = {}'.format(processed_num, corrects))
 
         return average_loss, acc
@@ -121,7 +111,7 @@ class DANNSolver(Solver):
 
             target_inputs = target_inputs.to(self.device)
             target_domain_outputs = self.model(target_inputs, alpha=alpha, test_mode=False, is_source=False)
-            target_domain_labels = torch.ones((target_labels.size()[0], 1), device=self.device)
+            target_domain_labels = torch.ones((target_labels.size(0), 1), device=self.device)
             target_domain_loss = nn.BCELoss()(target_domain_outputs, target_domain_labels)
 
             # TODO 2 : Source Train
@@ -133,7 +123,12 @@ class DANNSolver(Solver):
             source_domain_outputs, source_class_outputs = self.model(source_inputs, alpha=alpha, test_mode=False,
                                                                      is_source=True)
             source_labels = source_labels.to(self.device)
-            source_class_loss = nn.CrossEntropyLoss()(source_class_outputs, source_labels)
+
+            source_class_loss = nn.CrossEntropyLoss()(
+                # nn.Softmax(dim=1)(source_class_outputs),
+                source_class_outputs,
+                source_labels
+            )
 
             source_domain_labels = torch.zeros((source_labels.size()[0], 1), device=self.device)
             source_domain_loss = nn.BCELoss()(source_domain_outputs, source_domain_labels)
@@ -160,5 +155,5 @@ class DANNSolver(Solver):
         print()
         print('\nData size = {} , corrects = {}'.format(total_source_num, source_corrects))
         print('Using {:4f}'.format(time.time() - since))
-        print('Alpha = ',alpha)
+        print('Alpha = ', alpha)
         return average_loss, acc
