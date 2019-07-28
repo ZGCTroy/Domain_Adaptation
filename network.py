@@ -492,7 +492,7 @@ class MADA(nn.Module):
 
         features, class_outputs = self.base_model(x, get_features=True, get_class_outputs=True)
 
-        softmax_class_outputs = nn.Softmax(dim=1)(class_outputs)
+        softmax_class_outputs = nn.Softmax(dim=1)(class_outputs).detach()
 
         i = -1
         domain_outputs = []
