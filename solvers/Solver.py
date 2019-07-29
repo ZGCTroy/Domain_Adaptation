@@ -132,7 +132,7 @@ class Solver():
                 self.add_log(epoch, train_acc, val_acc, test_acc, train_loss, val_loss, test_loss)
                 self.save_log()
 
-            print('Current Best Test Acc : {:4f}'.format(best_test_acc))
+            print('Cuda : ',self.device, 'Current Best Test Acc : {:4f}'.format(best_test_acc))
             if self.iter_num >= self.max_iter_num:
                 break
             print('Optimizer : ', self.optimizer_type, 'Cur lr : ', self.cur_lr, '\n\n')
