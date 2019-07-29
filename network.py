@@ -200,7 +200,7 @@ class AdversarialNetwork(nn.Module):
 
 
 class ResNet50(nn.Module):
-    def __init__(self, bottleneck_dim=256, n_classes=1000, pretrained=True):
+    def __init__(self, bottleneck_dim=256, n_classes=1000, pretrained=True,use_dropout=False):
         super(ResNet50, self).__init__()
         self.n_classes = n_classes
         self.pretrained = pretrained
@@ -219,6 +219,8 @@ class ResNet50(nn.Module):
             resnet50.layer4,
             resnet50.avgpool,
         )
+        if use_dropout:
+            self.feature_extracter.add_module(nn.Dropout(0.5))
 
         self.bottleneck = nn.Linear(resnet50.fc.in_features, bottleneck_dim)
         self.bottleneck.apply(init_weights)
@@ -306,15 +308,15 @@ class DANN(nn.Module):
 
 
 class MT(nn.Module):
-    def __init__(self, n_classes, base_model, pretrained=True):
+    def __init__(self, n_classes, base_model, pretrained=True, use_dropout=False):
         super(MT, self).__init__()
 
         self.n_classes = n_classes
         self.pretrained = pretrained
 
         if base_model == 'ResNet50':
-            self.student = ResNet50(n_classes=n_classes, pretrained=pretrained, bottleneck_dim=1024)
-            self.teacher = ResNet50(n_classes=n_classes, pretrained=pretrained, bottleneck_dim=1024)
+            self.student = ResNet50(n_classes=n_classes, pretrained=pretrained, bottleneck_dim=1024,use_dropout=use_dropout)
+            self.teacher = ResNet50(n_classes=n_classes, pretrained=pretrained, bottleneck_dim=1024,use_dropout=use_dropout)
 
         if base_model == 'DigitsStoM':
             self.student = DigitsStoM(n_classes=n_classes)

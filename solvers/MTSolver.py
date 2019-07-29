@@ -73,11 +73,11 @@ class MTSolver(Solver):
 
         if self.dataset_type == 'Office31':
             self.confidence_thresh = 0.90
-            self.model = MT(n_classes=self.n_classes, base_model='ResNet50')
+            self.model = MT(n_classes=self.n_classes, base_model='ResNet50', use_dropout=True)
 
         if self.dataset_type == 'OfficeHome':
             self.confidence_thresh = 0.90
-            self.model = MT(n_classes=self.n_classes, base_model='ResNet50')
+            self.model = MT(n_classes=self.n_classes, base_model='ResNet50', use_dropout=True)
 
         if self.pretrained:
             self.load_model(path=self.models_checkpoints_dir + '/' + self.model_name + '_best_train.pt')
@@ -145,23 +145,35 @@ class MTSolver(Solver):
         # tmp = torch.Tensor(x) + torch.randn_like(x) * 0.1
         # if random.random() < 0.5:
         #     tmp = tmp.flip([2])
-        theta = np.zeros((x.size(0), 2, 3), dtype=np.float32)
+        N = x.size(0)
+        theta = np.zeros((N, 2, 3), dtype=np.float32)
         theta[:, 0, 0] = theta[:, 1, 1] = 1.0
 
-        if T:
-            theta[:, :, 2:] += np.random.uniform(low=-0.2, high=0.2, size=(x.size(0), 2, 1))
+        if self.dataset_type in ['Office31', 'OfficeHome']:
+            # scale_u_range
+            scl = np.exp(
+                np.random.uniform(
+                    low=np.log(0.75),
+                    high=np.log(1.33),
+                    size=(N,)
+                )
+            )
+            theta[:, 0, 0] *= scl
+            theta[:, 1, 1] *= scl
+        else:
+            if T:
+                theta[:, :, 2:] += np.random.uniform(low=-0.2, high=0.2, size=(N, 2, 1))
 
-        if A:
-            theta[:, :, :2] += np.random.normal(scale=0.1, size=(x.size(0), 2, 2))
+            if A:
+                theta[:, :, :2] += np.random.normal(scale=0.1, size=(N, 2, 2))
 
         grid = F.affine_grid(theta=torch.from_numpy(theta), size=x.size())
         new_x = F.grid_sample(input=x, grid=grid)
-        # print()
-        # print(x.size())
-        # print(x[0])
-        # print()
-        # print(new_x.size())
-        # print(new_x[0])
+
+        if self.dataset_type in ['Office31', 'OfficeHome']:
+            if random.random() < 0.5:
+                new_x = new_x.flip([2])
+
         return new_x
 
     def train_one_epoch(self):
