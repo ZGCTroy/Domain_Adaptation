@@ -220,7 +220,7 @@ class ResNet50(nn.Module):
             resnet50.avgpool,
         )
         if use_dropout:
-            self.feature_extracter.add_module(module=nn.Dropout(0.5))
+            self.feature_extracter.add_module(name='dropout',module=nn.Dropout(0.5))
 
         self.bottleneck = nn.Linear(resnet50.fc.in_features, bottleneck_dim)
         self.bottleneck.apply(init_weights)
