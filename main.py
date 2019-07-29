@@ -29,6 +29,7 @@ parser.add_argument('--iterations', type=int, default=999999)
 parser.add_argument('--test_interval', type=int, default=500)
 parser.add_argument('--lr', type=float, default=0.001)
 parser.add_argument('--gamma', type=float, default=10)
+parser.add_argument('--num_k', type=int, default=4)
 
 args = parser.parse_args()
 
@@ -105,7 +106,8 @@ def main():
             num_workers=args.num_workers,
             lr=args.lr,
             gamma=args.gamma,
-            optimizer_type=args.optimizer
+            optimizer_type=args.optimizer,
+            num_k=args.num_k
         )
 
     if args.model == 'MADA':

@@ -45,3 +45,7 @@ Adam -> SGD
 # 7月22日
 完成DANN，设计base mode  + ad model
 
+# 7月28日
+MADA n_classes个discriminator的loss直接求和，不要求平均，使性能平均提升10%以上 
+# 7月29
+MCD 将一层的分类器拓展到多层，有助于提高效果,AtoW从84%提升到了89%

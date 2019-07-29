@@ -313,8 +313,8 @@ class MT(nn.Module):
         self.pretrained = pretrained
 
         if base_model == 'ResNet50':
-            self.student = ResNet50(n_classes=n_classes, pretrained=pretrained)
-            self.teacher = ResNet50(n_classes=n_classes, pretrained=pretrained)
+            self.student = ResNet50(n_classes=n_classes, pretrained=pretrained, bottleneck_dim=1024)
+            self.teacher = ResNet50(n_classes=n_classes, pretrained=pretrained, bottleneck_dim=1024)
 
         if base_model == 'DigitsStoM':
             self.student = DigitsStoM(n_classes=n_classes)
@@ -353,29 +353,42 @@ class MCD(nn.Module):
         self.base_model_name = base_model
 
         if base_model == 'ResNet50':
-            self.Generator = ResNet50(n_classes=n_classes, pretrained=pretrained)
+            self.in_features_size = 256
+            self.Generator = ResNet50(n_classes=n_classes, pretrained=pretrained, bottleneck_dim=self.in_features_size)
             self.Classifier1 = nn.Sequential(
-                nn.Linear(256, n_classes)
+                nn.Dropout(),
+                nn.Linear(self.in_features_size, 1024),
+                nn.BatchNorm1d(1024),
+                nn.ReLU(),
+                nn.Linear(1024, n_classes)
             )
             self.Classifier2 = nn.Sequential(
-                nn.Linear(256, n_classes)
+                nn.Dropout(),
+                nn.Linear(self.in_features_size, 1024),
+                nn.BatchNorm1d(1024),
+                nn.ReLU(),
+                nn.Linear(1024, n_classes)
             )
             self.lr_mult = 10
             self.decay_mult = 2
 
         if base_model == 'DigitsStoM':
             self.Generator = DigitsStoM(n_classes=n_classes)
+            self.in_features_size = 128
             self.Classifier1 = nn.Sequential(
-                nn.Linear(128, n_classes)
+                nn.Linear(128, 256),
+                nn.Linear(256, n_classes)
             )
             self.Classifier2 = nn.Sequential(
-                nn.Linear(128, n_classes)
+                nn.Linear(128, 256),
+                nn.Linear(256, n_classes)
             )
             self.lr_mult = 1
             self.decay_mult = 1
 
         if base_model == 'DigitsMU':
             self.Generator = DigitsMU(n_classes=n_classes)
+            self.in_features_size = 1024
             self.Classifier1 = nn.Sequential(
                 nn.Linear(1024, 256),
                 nn.Linear(256, n_classes)
@@ -389,7 +402,9 @@ class MCD(nn.Module):
 
     def forward(self, x):
         features = self.Generator(x, get_features=True, get_class_outputs=False)
+
         outputs1 = self.Classifier1(features)
+
         outputs2 = self.Classifier2(features)
 
         return outputs1, outputs2

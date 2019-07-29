@@ -8,6 +8,7 @@ from network import MT
 import numpy as np
 from torch.nn import functional as F
 from torchvision import transforms
+import random
 
 
 class OldWeightEMA(object):
@@ -95,7 +96,7 @@ class MTSolver(Solver):
             sys.stdout.write('\r{}/{}'.format(processed_num, data_num))
             sys.stdout.flush()
 
-            #inputs = self.augment(inputs, T=False, F=False)
+            # inputs = self.augment(inputs, T=False, F=False)
             inputs = inputs.to(self.device)
             labels = labels.to(self.device)
 
@@ -140,19 +141,28 @@ class MTSolver(Solver):
 
         return aug_loss.mean() * self.rampup_value
 
-    def TF(self, x, T=True, F=True):
-        # x = transforms.ToPILImage()(x)
+    def augment(self, x, T=True, A=True):
+        # tmp = torch.Tensor(x) + torch.randn_like(x) * 0.1
+        # if random.random() < 0.5:
+        #     tmp = tmp.flip([2])
+        theta = np.zeros((x.size(0), 2, 3), dtype=np.float32)
+        theta[:, 0, 0] = theta[:, 1, 1] = 1.0
+
         if T:
-            x = transforms.RandomAffine(degrees=0, translate=(0.1, 0))(x)
-        if F:
-            x = transforms.RandomHorizontalFlip(0.5)(x)
-        # x = transforms.ToTensor()(x)
+            theta[:, :, 2:] += np.random.uniform(low=-0.2, high=0.2, size=(x.size(0), 2, 1))
 
-        return x
+        if A:
+            theta[:, :, :2] += np.random.normal(scale=0.1, size=(x.size(0), 2, 2))
 
-    def augment(self, x, T=True, F=True):
-        tmp = torch.Tensor(x) + torch.randn_like(x) * 0.1
-        return tmp
+        grid = F.affine_grid(theta=torch.from_numpy(theta), size=x.size())
+        new_x = F.grid_sample(input=x, grid=grid)
+        # print()
+        # print(x.size())
+        # print(x[0])
+        # print()
+        # print(new_x.size())
+        # print(new_x[0])
+        return new_x
 
     def train_one_epoch(self):
 
@@ -173,7 +183,7 @@ class MTSolver(Solver):
             self.rampup_value = np.exp(-p * p * 5.0)
         else:
             self.rampup_value = 1.0
-        print('ramup value = ',self.rampup_value)
+        print('ramup value = ', self.rampup_value)
 
         for target_inputs, target_labels in self.data_loader['target']['train']:
             sys.stdout.write('\r{}/{}'.format(processed_target_num, total_target_num))
@@ -185,10 +195,11 @@ class MTSolver(Solver):
 
             # TODO 1 : Target Train
 
-            target_x1 = self.augment(target_inputs, T=False, F=False).to(self.device)
-            target_x2 = self.augment(target_inputs, T=False, F=False).to(self.device)
+            target_x1 = self.augment(target_inputs).to(self.device)
+            target_x2 = self.augment(target_inputs).to(self.device)
 
-            target_y1, target_y2 = self.model(target_x1=target_x1, target_x2=target_x2, test_mode=False, is_source=False)
+            target_y1, target_y2 = self.model(target_x1=target_x1, target_x2=target_x2, test_mode=False,
+                                              is_source=False)
 
             target_y1 = F.softmax(target_y1, dim=1)
             target_y2 = F.softmax(target_y2, dim=1)
@@ -200,7 +211,7 @@ class MTSolver(Solver):
 
             source_iter = iter(self.data_loader['source']['train'])
             source_inputs, source_labels = next(source_iter)
-            source_inputs = self.augment(source_inputs,T=False,F=False).to(self.device)
+            source_inputs = self.augment(source_inputs).to(self.device)
 
             source_y = self.model(source_x=source_inputs, test_mode=False, is_source=True)
             source_labels = source_labels.to(self.device)
