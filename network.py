@@ -513,6 +513,7 @@ class MADA(nn.Module):
 
     def get_parameters(self):
         parameters = self.base_model.get_parameters()
+
         for ad in self.domain_classifiers:
             parameters += ad.get_parameters()
 
