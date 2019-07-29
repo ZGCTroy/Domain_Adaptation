@@ -66,6 +66,7 @@ class MTSolver(Solver):
     def set_model(self):
         if self.dataset_type == 'Digits':
             self.confidence_thresh = 0.968
+            self.loss_weight = 10.0
             if self.task in ['MtoU', 'UtoM']:
                 self.model = MT(n_classes=self.n_classes, base_model='DigitsMU')
             if self.task in ['StoM']:
