@@ -92,7 +92,7 @@ class Solver():
         best_test_loss, best_test_acc = self.test(
             data_loader=self.data_loader['target']['test'],
         )
-        print('Initial Test Loss: {:.4f} Acc: {:.4f}\n'.format(best_val_loss, best_val_acc))
+        print('Initial Test Loss: {:.4f} Acc: {:.4f}\n'.format(best_test_loss, best_test_acc))
         print()
 
         for epoch in range(num_epochs):

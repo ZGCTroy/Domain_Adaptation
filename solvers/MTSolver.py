@@ -71,11 +71,11 @@ class MTSolver(Solver):
                 self.model = MT(n_classes=self.n_classes, base_model='DigitsStoM')
 
         if self.dataset_type == 'Office31':
-            self.confidence_thresh = 0.70
+            self.confidence_thresh = 0.90
             self.model = MT(n_classes=self.n_classes, base_model='ResNet50')
 
         if self.dataset_type == 'OfficeHome':
-            self.confidence_thresh = 0.30
+            self.confidence_thresh = 0.90
             self.model = MT(n_classes=self.n_classes, base_model='ResNet50')
 
         if self.pretrained:
