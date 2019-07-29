@@ -160,6 +160,8 @@ class MTSolver(Solver):
             )
             theta[:, 0, 0] *= scl
             theta[:, 1, 1] *= scl
+            theta[:, :, 2:] += np.random.uniform(low=-0.2, high=0.2, size=(N, 2, 1))
+            theta[:, :, :2] += np.random.normal(scale=0.1, size=(N, 2, 2))
         else:
             if T:
                 theta[:, :, 2:] += np.random.uniform(low=-0.2, high=0.2, size=(N, 2, 1))
