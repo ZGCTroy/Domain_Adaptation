@@ -175,12 +175,13 @@ class AdversarialNetwork(nn.Module):
             nn.ReLU(),
             nn.Dropout(0.5),
             nn.Linear(hidden_size, output_num),
-            # nn.Sigmoid()
+            nn.Sigmoid()
         )
-        self.discriminator.apply(init_weights())
 
-        if sigmoid:
-            self.discriminator.add_module(name='sigmoid', module=nn.Sigmoid())
+        self.discriminator.apply(init_weights)
+        #
+        # if sigmoid:
+        #     self.discriminator.add_module(name='sigmoid', module=nn.Sigmoid())
 
         self.output_num = output_num
 
@@ -430,7 +431,7 @@ class SmallAdversarialNetwork(nn.Module):
         self.discriminator = nn.Sequential(
             nn.Linear(in_feature, 1024),
             nn.ReLU(),
-            nn.Linear(1024,output_num)
+            nn.Linear(1024, output_num)
             # nn.Sigmoid()
         )
         if sigmoid:
@@ -500,7 +501,9 @@ class MADA(nn.Module):
         domain_outputs = []
         for ad in self.domain_classifiers:
             i += 1
+
             weighted_features = softmax_class_outputs[:, i].view(-1, 1) * features
+
             if i == 0:
                 domain_outputs = ad(weighted_features, alpha=alpha)
             else:

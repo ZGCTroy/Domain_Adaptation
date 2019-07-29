@@ -127,18 +127,18 @@ class MTSolver(Solver):
 
     def compute_aug_loss(self, stu_out, tea_out):
 
-        conf_tea = torch.max(tea_out, 1)[0]
-        unsup_mask = (conf_tea > self.confidence_thresh).float()
-        unsup_mask_rate = unsup_mask.sum() / len(unsup_mask)
+        # conf_tea = torch.max(tea_out, 1)[0]
+        # unsup_mask = (conf_tea > self.confidence_thresh).float()
+        # unsup_mask_rate = unsup_mask.sum() / len(unsup_mask)
 
         d_aug_loss = stu_out - tea_out
         aug_loss = d_aug_loss * d_aug_loss
         aug_loss = aug_loss.mean(dim=1)
 
-        unsup_loss = (aug_loss * unsup_mask).mean()
-        return unsup_loss, unsup_mask_rate
+        # unsup_loss = (aug_loss * unsup_mask).mean()
+        # return unsup_loss, unsup_mask_rate
 
-        # return aug_loss.mean() * self.rampup_value
+        return aug_loss.mean() * self.rampup_value
 
     def TF(self, x, T=True, F=True):
         # x = transforms.ToPILImage()(x)
@@ -165,15 +165,15 @@ class MTSolver(Solver):
         total_target_num = len(self.data_loader['target']['train'].dataset)
         processed_target_num = 0
         total_source_num = 0
-        CT_pass_rate = 0
+        # CT_pass_rate = 0
 
-        # if self.epoch < self.rampup_epoch:
-        #     p = max(0.0, float(self.epoch)) / float(self.rampup_epoch)
-        #     p = 1.0 - p
-        #     self.rampup_value = np.exp(-p * p * 5.0)
-        # else:
-        #     self.rampup_value = 1.0
-        # print('ramup value = ',self.rampup_value)
+        if self.epoch < self.rampup_epoch:
+            p = max(0.0, float(self.epoch)) / float(self.rampup_epoch)
+            p = 1.0 - p
+            self.rampup_value = np.exp(-p * p * 5.0)
+        else:
+            self.rampup_value = 1.0
+        print('ramup value = ',self.rampup_value)
 
         for target_inputs, target_labels in self.data_loader['target']['train']:
             sys.stdout.write('\r{}/{}'.format(processed_target_num, total_target_num))
@@ -193,7 +193,8 @@ class MTSolver(Solver):
             target_y1 = F.softmax(target_y1, dim=1)
             target_y2 = F.softmax(target_y2, dim=1)
 
-            aug_loss, CT_pass_rate = self.compute_aug_loss(target_y1, target_y2)
+            # aug_loss, CT_pass_rate = self.compute_aug_loss(target_y1, target_y2)
+            aug_loss = self.compute_aug_loss(target_y1, target_y2)
 
             # TODO 1 : Source Train
 
@@ -228,7 +229,7 @@ class MTSolver(Solver):
 
         print()
         print('\nData size = {} , corrects = {}'.format(total_source_num, source_corrects))
-        print('CT pass rate : ', CT_pass_rate)
+        # print('CT pass rate : ', CT_pass_rate)
         print('Using {:4f}'.format(time.time() - since))
 
         return average_loss, acc
