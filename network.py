@@ -177,6 +177,8 @@ class AdversarialNetwork(nn.Module):
             nn.Linear(hidden_size, output_num),
             # nn.Sigmoid()
         )
+        self.discriminator.apply(init_weights())
+
         if sigmoid:
             self.discriminator.add_module(name='sigmoid', module=nn.Sigmoid())
 
