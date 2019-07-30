@@ -66,7 +66,7 @@ class MTSolver(Solver):
     def set_model(self):
         if self.dataset_type == 'Digits':
             self.confidence_thresh = 0.968
-            self.loss_weight = 10.0
+
             if self.task in ['MtoU', 'UtoM']:
                 self.model = MT(n_classes=self.n_classes, base_model='DigitsMU')
             if self.task in ['StoM']:
@@ -74,10 +74,12 @@ class MTSolver(Solver):
 
         if self.dataset_type == 'Office31':
             self.confidence_thresh = 0.90
+            self.loss_weight = 10.0
             self.model = MT(n_classes=self.n_classes, base_model='ResNet50', use_dropout=True)
 
         if self.dataset_type == 'OfficeHome':
             self.confidence_thresh = 0.90
+            self.loss_weight = 10.0
             self.model = MT(n_classes=self.n_classes, base_model='ResNet50', use_dropout=True)
 
         if self.pretrained:
@@ -163,6 +165,15 @@ class MTSolver(Solver):
             theta[:, 1, 1] *= scl
             theta[:, :, 2:] += np.random.uniform(low=-0.2, high=0.2, size=(N, 2, 1))
             theta[:, :, :2] += np.random.normal(scale=0.1, size=(N, 2, 2))
+
+            if T:
+                theta[:, :, 2:] += np.random.uniform(low=-0.2, high=0.2, size=(N, 2, 1))
+
+            if A:
+                theta[:, :, :2] += np.random.normal(scale=0.1, size=(N, 2, 2))
+            # hflip
+            x_hflip = np.random.binomial(1, 0.5, size=(N,)) * 2 - 1
+            theta[:, 0, 0] = x_hflip.astype(np.float32)
         else:
             if T:
                 theta[:, :, 2:] += np.random.uniform(low=-0.2, high=0.2, size=(N, 2, 1))
@@ -173,9 +184,9 @@ class MTSolver(Solver):
         grid = F.affine_grid(theta=torch.from_numpy(theta), size=x.size())
         new_x = F.grid_sample(input=x, grid=grid)
 
-        if self.dataset_type in ['Office31', 'OfficeHome']:
-            if random.random() < 0.5:
-                new_x = new_x.flip([2])
+        # if self.dataset_type in ['Office31', 'OfficeHome']:
+        #     if random.random() < 0.5:
+        #         new_x = new_x.flip([2])
 
         return new_x
 
@@ -256,6 +267,7 @@ class MTSolver(Solver):
         print()
         print('\nData size = {} , corrects = {}'.format(total_source_num, source_corrects))
         # print('CT pass rate : ', CT_pass_rate)
+        print('loss weight :',self.loss_weight)
         print('Using {:4f}'.format(time.time() - since))
 
         return average_loss, acc
