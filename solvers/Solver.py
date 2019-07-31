@@ -317,3 +317,8 @@ class Solver():
             print('Read model in {} successfully\n'.format(path))
         else:
             print('Cannot find {}, use the initial model\n'.format(path))
+
+    def cycle(self, iterable):
+        while True:
+            for x in iterable:
+                yield x

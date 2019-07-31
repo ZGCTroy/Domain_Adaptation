@@ -46,15 +46,19 @@ def get_small_classifier(in_features_size, n_classes):
 
 
 def get_large_classifier(in_features_size, n_classes):
+
     classifier = nn.Sequential(
+        nn.Dropout(0.5),
         nn.Linear(in_features_size, 1024),
         nn.BatchNorm1d(1024),
         nn.ReLU(),
+        nn.Dropout(0.5),
         nn.Linear(1024, 1024),
         nn.BatchNorm1d(1024),
         nn.ReLU(),
         nn.Linear(1024, n_classes)
     )
+
     return classifier
 
 
@@ -69,45 +73,16 @@ class AdversarialNetwork(nn.Module):
             nn.Linear(self.in_features_size, 1024),
             nn.BatchNorm1d(1024),
             nn.ReLU(),
-            # nn.Dropout(0.5),
+            nn.Dropout(0.5),
             nn.Linear(1024, 1024),
             nn.BatchNorm1d(1024),
             nn.ReLU(),
-            # nn.Dropout(0.5),
+            nn.Dropout(0.5),
             nn.Linear(1024, 1),
             nn.Sigmoid()
         )
 
         self.discriminator.apply(init_weights)
-
-    def forward(self, x, alpha):
-        x = ReverseLayerF.apply(x, alpha)
-
-        y = self.discriminator(x)
-
-        return y
-
-    def get_parameters(self):
-        parameters = [
-            {"params": self.discriminator.parameters(), "lr_mult": self.lr_mult, 'decay_mult': self.decay_mult}
-        ]
-        return parameters
-
-
-class SmallAdversarialNetwork(nn.Module):
-    def __init__(self, in_features_size, lr_mult=10, decay_mult=2):
-        super(SmallAdversarialNetwork, self).__init__()
-        self.in_features_size = in_features_size
-        self.lr_mult = lr_mult
-        self.decay_mult = decay_mult
-
-        self.discriminator = nn.Sequential(
-            nn.Linear(self.in_features_size, 256),
-            nn.BatchNorm1d(256),
-            nn.ReLU(),
-            nn.Linear(256, 1),
-            nn.Sigmoid()
-        )
 
     def forward(self, x, alpha):
         x = ReverseLayerF.apply(x, alpha)
@@ -297,7 +272,7 @@ class ResNet50(nn.Module):
         # Class Classifier
         self.classifier = get_large_classifier(
             in_features_size=self.features_output_size,
-            n_classes=n_classes
+            n_classes=n_classes,
         )
         self.classifier.apply(init_weights)
 
@@ -346,34 +321,24 @@ class DANN(nn.Module):
             self.lr_mult = 10
             self.decay_mult = 2
             self.use_init = True
-            self.use_small_ad = False
 
         if base_model == 'DigitsStoM':
             self.base_model = DigitsStoM(n_classes=n_classes)
             self.lr_mult = 1
             self.decay_mult = 1
             self.use_init = True
-            self.use_small_ad = False
 
         if base_model == 'DigitsMU':
             self.base_model = DigitsMU(n_classes=n_classes)
             self.lr_mult = 1
             self.decay_mult = 1
             self.use_init = True
-            self.use_small_ad = True
 
-        if self.use_small_ad:
-            self.domain_classifier = SmallAdversarialNetwork(
-                in_features_size=self.base_model.features_output_size,
-                lr_mult=self.lr_mult,
-                decay_mult=self.decay_mult,
-            )
-        else:
-            self.domain_classifier = AdversarialNetwork(
-                in_features_size=self.base_model.features_output_size,
-                lr_mult=self.lr_mult,
-                decay_mult=self.decay_mult,
-            )
+        self.domain_classifier = AdversarialNetwork(
+            in_features_size=self.base_model.features_output_size,
+            lr_mult=self.lr_mult,
+            decay_mult=self.decay_mult,
+        )
 
     def forward(self, x, alpha=1.0, test_mode=False, is_source=True):
         if test_mode:
@@ -448,13 +413,13 @@ class MCD(nn.Module):
 
             self.Classifier1 = get_large_classifier(
                 in_features_size=self.in_features_size,
-                n_classes=self.n_classes
+                n_classes=self.n_classes,
             )
             self.Classifier1.apply(init_weights)
 
             self.Classifier2 = get_large_classifier(
                 in_features_size=self.in_features_size,
-                n_classes=self.n_classes
+                n_classes=self.n_classes,
             )
             self.Classifier2.apply(init_weights)
 
@@ -663,6 +628,7 @@ class MADA(nn.Module):
             self.lr_mult = 10
             self.decay_mult = 2
             self.use_init = True
+            self.use_dropout = True
 
         if base_model == 'DigitsStoM':
             self.base_model = DigitsStoM(n_classes=n_classes)

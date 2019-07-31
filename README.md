@@ -57,3 +57,8 @@ init_weight
 # 7月31日 
 
 normalization 
+
+image size resize=256 crop=224
+
+MCD 的classifier的dropout很重要
+
