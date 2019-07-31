@@ -271,7 +271,9 @@ class ResNet50(nn.Module):
         self.use_dropout = use_dropout
 
         resnet50 = torchvision.models.resnet50(pretrained=pretrained)
-        self.normalization_layer = nn.BatchNorm2d(3)
+
+        # self.normalization_layer = nn.BatchNorm2d(3)
+
         # Extracter
         self.feature_extracter = nn.Sequential(
             resnet50.conv1,
@@ -303,7 +305,7 @@ class ResNet50(nn.Module):
         if get_features == False and get_class_outputs == False:
             return None
 
-        x = self.normalization_layer(x)
+        # x = self.normalization_layer(x)
 
         features = self.feature_extracter(x)
         features = features.view(features.size(0), -1)
