@@ -15,7 +15,7 @@ def _check_exists(self):
 
 def load_Office(root_dir, domain):
     root_dir = os.path.join(root_dir, domain)
-    transform = transform_for_Office(resize_size=[256, 256], crop_size=224)
+    transform = transform_for_Office(resize_size=[192,192], crop_size=160)
     dataset = {
         'train': datasets.ImageFolder(
             root=root_dir,
@@ -33,12 +33,12 @@ def load_SVHN(root_dir):
     T = {
         'train': transforms.Compose([
             transforms.ToTensor(),
-            transforms.Normalize(mean=[0.43777722, 0.4438628, 0.47288644], std=[0.19664814, 0.19963288, 0.19541258])
+            # transforms.Normalize(mean=[0.43777722, 0.4438628, 0.47288644], std=[0.19664814, 0.19963288, 0.19541258])
             # transforms.Normalize(mean=(0.5,), std=(0.5,))
         ]),
         'test': transforms.Compose([
             transforms.ToTensor(),
-            transforms.Normalize(mean=[0.4525405, 0.45260695, 0.46907398], std=[0.21789917, 0.22504489, 0.22678198])
+            # transforms.Normalize(mean=[0.4525405, 0.45260695, 0.46907398], std=[0.21789917, 0.22504489, 0.22678198])
             # transforms.Normalize(mean=(0.5,), std=(0.5,))
         ])
     }
@@ -76,8 +76,8 @@ def load_USPS(root_dir):
     #     T['train'].append(transforms.Lambda(lambda x: x.expand([3, -1, -1])))
     #     T['test'].append(transforms.Lambda(lambda x: x.expand([3, -1, -1])))
 
-    T['train'].append(transforms.Normalize(mean=(0.25466308,), std=(0.35181096,)))
-    T['test'].append(transforms.Normalize(mean=(0.26791447,), std=(0.3605367,)))
+    # T['train'].append(transforms.Normalize(mean=(0.25466308,), std=(0.35181096,)))
+    # T['test'].append(transforms.Normalize(mean=(0.26791447,), std=(0.3605367,)))
 
     # T['train'].append(transforms.Normalize(mean=(0.5,), std=(0.5,)))
     # T['test'].append(transforms.Normalize(mean=(0.5,), std=(0.5,)))
@@ -111,9 +111,9 @@ def load_MNIST(root_dir, resize_size=28, Gray_to_RGB=False):
         T['train'].append(transforms.Lambda(lambda x: x.expand([3, -1, -1])))
         T['test'].append(transforms.Lambda(lambda x: x.expand([3, -1, -1])))
 
-    T['train'].append(transforms.Normalize(mean=(0.13065113,), std=(0.30767146,)))
-    T['test'].append(transforms.Normalize(mean=(0.13284597,), std=(0.30983892,)))
-
+    # T['train'].append(transforms.Normalize(mean=(0.13065113,), std=(0.30767146,)))
+    # T['test'].append(transforms.Normalize(mean=(0.13284597,), std=(0.30983892,)))
+    #
     # T['train'].append(transforms.Normalize(mean=(0.5,), std=(0.5,)))
     # T['test'].append(transforms.Normalize(mean=(0.5,), std=(0.5,)))
 

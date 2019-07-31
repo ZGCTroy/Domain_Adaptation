@@ -46,12 +46,14 @@ class MADASolver(Solver):
 
     def set_model(self):
         if self.dataset_type == 'Digits':
+            self.loss_weight = 1.0
             if self.task in ['MtoU', 'UtoM']:
                 self.model = MADA(n_classes=self.n_classes, base_model='DigitsMU')
             if self.task in ['StoM']:
                 self.model = MADA(n_classes=self.n_classes, base_model='DigitsStoM')
 
         if self.dataset_type in ['Office31', 'OfficeHome']:
+            self.loss_weight = 1.0
             self.model = MADA(n_classes=self.n_classes, base_model='ResNet50')
 
         if self.pretrained:
@@ -155,7 +157,7 @@ class MADASolver(Solver):
             # TODO 3 : LOSS
 
             # loss_weight = torch.Tensor(self.n_classes,device=self.device)
-            loss = self.n_classes * (target_domain_loss + source_domain_loss) + source_class_loss
+            loss = self.loss_weight * 0.5 * self.n_classes * (target_domain_loss + source_domain_loss) + source_class_loss
 
             loss.backward()
 

@@ -4,6 +4,7 @@ from solvers.DANNSolver import DANNSolver
 from solvers.MTSolver import MTSolver
 from solvers.MCDSolver import MCDSolver
 from solvers.MADASolver import MADASolver
+from solvers.MCD2Solver import MCD2Solver
 import os
 
 print(os.getcwd())
@@ -16,11 +17,12 @@ parser.add_argument('--dataset', type=str, default='Office31')
 parser.add_argument('--source', type=str, default='Webcam')
 parser.add_argument('--target', type=str, default='Dslr')
 parser.add_argument('--optimizer', type=str, default='SGD')
+parser.add_argument('--cuda', type=str, default='cuda:0')
 
 parser.add_argument('--test_mode', action='store_true', default=False)
 parser.add_argument('--pretrained', action='store_true', default=False)
 parser.add_argument('--if_test', action='store_true', default=False)
-parser.add_argument('--cuda', type=str, default='cuda:0')
+parser.add_argument('--use_CT', action='store_true', default=False)
 
 parser.add_argument('--batch_size', type=int, default=36)
 parser.add_argument('--num_workers', type=int, default=2)
@@ -88,11 +90,31 @@ def main():
             num_workers=args.num_workers,
             lr=args.lr,
             gamma=args.gamma,
-            optimizer_type=args.optimizer
+            optimizer_type=args.optimizer,
+            use_CT=args.use_CT
         )
 
     if args.model == 'MCD':
         solver = MCDSolver(
+            dataset_type=args.dataset,
+            source_domain=args.source,
+            target_domain=args.target,
+            cuda=args.cuda,
+            pretrained=args.pretrained,
+            test_mode=args.test_mode,
+            batch_size=args.batch_size,
+            num_epochs=args.epochs,
+            test_interval=args.test_interval,
+            max_iter_num=args.iterations,
+            num_workers=args.num_workers,
+            lr=args.lr,
+            gamma=args.gamma,
+            optimizer_type=args.optimizer,
+            num_k=args.num_k
+        )
+
+    if args.model == 'MCD2':
+        solver = MCD2Solver(
             dataset_type=args.dataset,
             source_domain=args.source,
             target_domain=args.target,

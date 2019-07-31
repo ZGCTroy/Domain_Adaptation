@@ -135,7 +135,7 @@ class DANNSolver(Solver):
 
             # TODO 3 : LOSS
 
-            loss = target_domain_loss + source_domain_loss + source_class_loss
+            loss = target_domain_loss + 0.5 * ( source_domain_loss + source_class_loss)
 
             loss.backward()
 

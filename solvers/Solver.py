@@ -251,14 +251,16 @@ class Solver():
         # TODO 2 : set dataloader
         self.set_dataloader()
 
+
         # TODO 3 : set model
+        self.models_checkpoints_dir = './models_checkpoints/' + self.dataset_type + '/' + self.task
         self.set_model()
 
         # TODO 4 : set optimizer
         self.set_optimizer()
 
         # TODO 5 : set other parameters
-        self.models_checkpoints_dir = './models_checkpoints/' + self.dataset_type + '/' + self.task
+
         self.logs_dir = './logs/' + self.dataset_type + '/' + self.task
 
         if self.test_mode:

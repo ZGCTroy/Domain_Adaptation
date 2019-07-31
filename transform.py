@@ -23,20 +23,20 @@ def transform_for_Digits(resize_size, Gray_to_RGB=False):
     return T
 
 
-def transform_for_Office(resize_size=[256,256], crop_size=224):
+def transform_for_Office(resize_size=[192,192], crop_size=160):
     T = {
         'train': transforms.Compose([
             transforms.Resize(resize_size),
             transforms.RandomResizedCrop(crop_size),
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+            # transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
         ]),
         'test': transforms.Compose([
             transforms.Resize(resize_size),
             transforms.CenterCrop(crop_size),
             transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+            # transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
         ])
     }
     return T

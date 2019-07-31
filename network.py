@@ -35,10 +35,101 @@ class ReverseLayerF(Function):
         return output, None
 
 
+def get_small_classifier(in_features_size, n_classes):
+    small_classifier = nn.Sequential(
+        nn.Linear(in_features_size, 256),
+        nn.BatchNorm1d(256),
+        nn.ReLU(),
+        nn.Linear(256, n_classes),
+    )
+    return small_classifier
+
+
+def get_large_classifier(in_features_size, n_classes):
+    classifier = nn.Sequential(
+        nn.Linear(in_features_size, 1024),
+        nn.BatchNorm1d(1024),
+        nn.ReLU(),
+        nn.Linear(1024, 1024),
+        nn.BatchNorm1d(1024),
+        nn.ReLU(),
+        nn.Linear(1024, n_classes)
+    )
+    return classifier
+
+
+class AdversarialNetwork(nn.Module):
+    def __init__(self, in_features_size, lr_mult=10, decay_mult=2):
+        super(AdversarialNetwork, self).__init__()
+        self.in_features_size = in_features_size
+        self.lr_mult = lr_mult
+        self.decay_mult = decay_mult
+
+        self.discriminator = nn.Sequential(
+            nn.Linear(self.in_features_size, 1024),
+            nn.BatchNorm1d(1024),
+            nn.ReLU(),
+            # nn.Dropout(0.5),
+            nn.Linear(1024, 1024),
+            nn.BatchNorm1d(1024),
+            nn.ReLU(),
+            # nn.Dropout(0.5),
+            nn.Linear(1024, 1),
+            nn.Sigmoid()
+        )
+
+        self.discriminator.apply(init_weights)
+
+    def forward(self, x, alpha):
+        x = ReverseLayerF.apply(x, alpha)
+
+        y = self.discriminator(x)
+
+        return y
+
+    def get_parameters(self):
+        parameters = [
+            {"params": self.discriminator.parameters(), "lr_mult": self.lr_mult, 'decay_mult': self.decay_mult}
+        ]
+        return parameters
+
+
+class SmallAdversarialNetwork(nn.Module):
+    def __init__(self, in_features_size, lr_mult=10, decay_mult=2):
+        super(SmallAdversarialNetwork, self).__init__()
+        self.in_features_size = in_features_size
+        self.lr_mult = lr_mult
+        self.decay_mult = decay_mult
+
+        self.discriminator = nn.Sequential(
+            nn.Linear(self.in_features_size, 256),
+            nn.BatchNorm1d(256),
+            nn.ReLU(),
+            nn.Linear(256, 1),
+            nn.Sigmoid()
+        )
+
+    def forward(self, x, alpha):
+        x = ReverseLayerF.apply(x, alpha)
+
+        y = self.discriminator(x)
+
+        return y
+
+    def get_parameters(self):
+        parameters = [
+            {"params": self.discriminator.parameters(), "lr_mult": self.lr_mult, 'decay_mult': self.decay_mult}
+        ]
+        return parameters
+
+
 # BaseLine network for "SVHN [3,32,32] -> MNIST [3,32,32]"
 class DigitsStoM(nn.Module):
-    def __init__(self, n_classes):
+    def __init__(self, n_classes, use_dropout=False):
         super(DigitsStoM, self).__init__()
+
+        self.use_dropout = use_dropout
+        self.normalization_layer = nn.BatchNorm2d(3)
 
         self.feature_extracter = nn.Sequential(
             nn.Conv2d(3, 128, (3, 3), padding=1),
@@ -75,15 +166,21 @@ class DigitsStoM(nn.Module):
             nn.AvgPool2d((6, 6))
         )
 
+        if self.use_dropout:
+            self.feature_extracter.add_module(name='dropout', module=nn.Dropout(0.5))
+
         self.features_output_size = 128
 
-        self.classifier = nn.Sequential(
-            nn.Linear(128, n_classes)
+        self.classifier = get_large_classifier(
+            in_features_size=self.features_output_size,
+            n_classes=n_classes
         )
 
     def forward(self, x, get_features=False, get_class_outputs=True):
         if get_features == False and get_class_outputs == False:
             return None
+
+        x = self.normalization_layer(x)
 
         features = self.feature_extracter(x)
         features = features.view(-1, 128)
@@ -108,10 +205,12 @@ class DigitsStoM(nn.Module):
 
 # BaseLine network for "MNIST [1,28,28] <-> USPS[1,28,28]"
 class DigitsMU(nn.Module):
-    def __init__(self, n_classes):
+    def __init__(self, n_classes, use_dropout=False):
         super(DigitsMU, self).__init__()
         self.n_classes = n_classes
+        self.use_dropout = use_dropout
 
+        self.normalization_layer = nn.BatchNorm2d(1)
         self.feature_extracter = nn.Sequential(
             nn.Conv2d(1, 32, (5, 5)),
             nn.BatchNorm2d(32),
@@ -124,20 +223,24 @@ class DigitsMU(nn.Module):
             nn.BatchNorm2d(64),
             nn.ReLU(),
             nn.MaxPool2d((2, 2)),
-            nn.Dropout()
         )
+
+        self.use_dropout = True
+        if self.use_dropout:
+            self.feature_extracter.add_module(name='dropout', module=nn.Dropout(0.5))
 
         self.features_output_size = 1024
 
-        self.classifier = nn.Sequential(
-            nn.Linear(1024, 256),
-            nn.ReLU(),
-            nn.Linear(256, n_classes)
+        self.classifier = get_small_classifier(
+            in_features_size=self.features_output_size,
+            n_classes=n_classes
         )
 
     def forward(self, x, get_features=False, get_class_outputs=True):
         if get_features == False and get_class_outputs == False:
             return None
+
+        x = self.normalization_layer(x)
 
         features = self.feature_extracter(x)
         features = features.view(-1, 1024)
@@ -159,54 +262,16 @@ class DigitsMU(nn.Module):
         ]
 
 
-class AdversarialNetwork(nn.Module):
-    def __init__(self, in_feature, hidden_size, lr_mult=10, decay_mult=2, output_num=1, sigmoid=True):
-        super(AdversarialNetwork, self).__init__()
-        self.in_feature = in_feature
-        self.hidden_size = hidden_size
-        self.lr_mult = lr_mult
-        self.decay_mult = decay_mult
-
-        self.discriminator = nn.Sequential(
-            nn.Linear(in_feature, hidden_size),
-            nn.ReLU(),
-            nn.Dropout(0.5),
-            nn.Linear(hidden_size, hidden_size),
-            nn.ReLU(),
-            nn.Dropout(0.5),
-            nn.Linear(hidden_size, output_num),
-            nn.Sigmoid()
-        )
-
-        self.discriminator.apply(init_weights)
-        #
-        # if sigmoid:
-        #     self.discriminator.add_module(name='sigmoid', module=nn.Sigmoid())
-
-        self.output_num = output_num
-
-    def forward(self, x, alpha):
-        x = ReverseLayerF.apply(x, alpha)
-
-        y = self.discriminator(x)
-
-        return y
-
-    def get_parameters(self):
-        parameters = [
-            {"params": self.discriminator.parameters(), "lr_mult": self.lr_mult, 'decay_mult': self.decay_mult}
-        ]
-        return parameters
-
-
+# ResNet for Office31 and OfficeHome
 class ResNet50(nn.Module):
-    def __init__(self, bottleneck_dim=256, n_classes=1000, pretrained=True,use_dropout=False):
+    def __init__(self, bottleneck_dim=256, n_classes=1000, pretrained=True, use_dropout=False):
         super(ResNet50, self).__init__()
         self.n_classes = n_classes
         self.pretrained = pretrained
+        self.use_dropout = use_dropout
 
         resnet50 = torchvision.models.resnet50(pretrained=pretrained)
-
+        self.normalization_layer = nn.BatchNorm2d(3)
         # Extracter
         self.feature_extracter = nn.Sequential(
             resnet50.conv1,
@@ -219,30 +284,37 @@ class ResNet50(nn.Module):
             resnet50.layer4,
             resnet50.avgpool,
         )
-        if use_dropout:
-            self.feature_extracter.add_module(name='dropout',module=nn.Dropout(0.5))
 
         self.bottleneck = nn.Linear(resnet50.fc.in_features, bottleneck_dim)
         self.bottleneck.apply(init_weights)
         self.features_output_size = bottleneck_dim
 
+        if use_dropout:
+            self.dropout = nn.Dropout(0.5)
+
         # Class Classifier
-        self.fc = nn.Linear(bottleneck_dim, n_classes)
-        self.fc.apply(init_weights)
-        self.__in_features = bottleneck_dim
-        self.classifier = nn.Sequential(
-            self.fc
+        self.classifier = get_large_classifier(
+            in_features_size=self.features_output_size,
+            n_classes=n_classes
         )
+        self.classifier.apply(init_weights)
 
     def forward(self, x, get_features=False, get_class_outputs=True):
         if get_features == False and get_class_outputs == False:
             return None
+
+        x = self.normalization_layer(x)
+
         features = self.feature_extracter(x)
         features = features.view(features.size(0), -1)
         features = self.bottleneck(features)
 
+        if self.use_dropout:
+            features = self.dropout(features)
+
         if get_features == True and get_class_outputs == False:
             return features
+
         class_outputs = self.classifier(features)
 
         if get_features:
@@ -271,23 +343,35 @@ class DANN(nn.Module):
             self.base_model = ResNet50(n_classes=n_classes, pretrained=pretrained)
             self.lr_mult = 10
             self.decay_mult = 2
+            self.use_init = True
+            self.use_small_ad = False
 
         if base_model == 'DigitsStoM':
             self.base_model = DigitsStoM(n_classes=n_classes)
             self.lr_mult = 1
             self.decay_mult = 1
+            self.use_init = True
+            self.use_small_ad = False
 
         if base_model == 'DigitsMU':
             self.base_model = DigitsMU(n_classes=n_classes)
             self.lr_mult = 1
             self.decay_mult = 1
+            self.use_init = True
+            self.use_small_ad = True
 
-        self.domain_classifier = AdversarialNetwork(
-            in_feature=self.base_model.features_output_size,
-            hidden_size=1024,
-            lr_mult=self.lr_mult,
-            decay_mult=self.decay_mult
-        )
+        if self.use_small_ad:
+            self.domain_classifier = SmallAdversarialNetwork(
+                in_features_size=self.base_model.features_output_size,
+                lr_mult=self.lr_mult,
+                decay_mult=self.decay_mult,
+            )
+        else:
+            self.domain_classifier = AdversarialNetwork(
+                in_features_size=self.base_model.features_output_size,
+                lr_mult=self.lr_mult,
+                decay_mult=self.decay_mult,
+            )
 
     def forward(self, x, alpha=1.0, test_mode=False, is_source=True):
         if test_mode:
@@ -308,23 +392,25 @@ class DANN(nn.Module):
 
 
 class MT(nn.Module):
-    def __init__(self, n_classes, base_model, pretrained=True, use_dropout=False):
+    def __init__(self, n_classes, base_model, pretrained=True):
         super(MT, self).__init__()
 
         self.n_classes = n_classes
         self.pretrained = pretrained
 
         if base_model == 'ResNet50':
-            self.student = ResNet50(n_classes=n_classes, pretrained=pretrained, bottleneck_dim=1024,use_dropout=use_dropout)
-            self.teacher = ResNet50(n_classes=n_classes, pretrained=pretrained, bottleneck_dim=1024,use_dropout=use_dropout)
+            self.student = ResNet50(n_classes=n_classes, pretrained=pretrained, bottleneck_dim=2048,
+                                    use_dropout=True)
+            self.teacher = ResNet50(n_classes=n_classes, pretrained=pretrained, bottleneck_dim=2048,
+                                    use_dropout=True)
 
         if base_model == 'DigitsStoM':
-            self.student = DigitsStoM(n_classes=n_classes)
-            self.teacher = DigitsStoM(n_classes=n_classes)
+            self.student = DigitsStoM(n_classes=n_classes, use_dropout=True)
+            self.teacher = DigitsStoM(n_classes=n_classes, use_dropout=True)
 
         if base_model == 'DigitsMU':
-            self.student = DigitsMU(n_classes=n_classes)
-            self.teacher = DigitsMU(n_classes=n_classes)
+            self.student = DigitsMU(n_classes=n_classes, use_dropout=True)
+            self.teacher = DigitsMU(n_classes=n_classes, use_dropout=True)
 
         for param in self.teacher.parameters():
             param.requires_grad = False
@@ -357,48 +443,53 @@ class MCD(nn.Module):
         if base_model == 'ResNet50':
             self.in_features_size = 256
             self.Generator = ResNet50(n_classes=n_classes, pretrained=pretrained, bottleneck_dim=self.in_features_size)
-            self.Classifier1 = nn.Sequential(
-                nn.Dropout(),
-                nn.Linear(self.in_features_size, 1024),
-                nn.BatchNorm1d(1024),
-                nn.ReLU(),
-                nn.Linear(1024, n_classes)
+
+            self.Classifier1 = get_large_classifier(
+                in_features_size=self.in_features_size,
+                n_classes=self.n_classes
             )
-            self.Classifier2 = nn.Sequential(
-                nn.Dropout(),
-                nn.Linear(self.in_features_size, 1024),
-                nn.BatchNorm1d(1024),
-                nn.ReLU(),
-                nn.Linear(1024, n_classes)
+            self.Classifier1.apply(init_weights)
+
+            self.Classifier2 = get_large_classifier(
+                in_features_size=self.in_features_size,
+                n_classes=self.n_classes
             )
+            self.Classifier2.apply(init_weights)
+
             self.lr_mult = 10
             self.decay_mult = 2
 
         if base_model == 'DigitsStoM':
             self.Generator = DigitsStoM(n_classes=n_classes)
             self.in_features_size = 128
-            self.Classifier1 = nn.Sequential(
-                nn.Linear(128, 256),
-                nn.Linear(256, n_classes)
+
+            self.Classifier1 = get_large_classifier(
+                in_features_size=self.in_features_size,
+                n_classes=self.n_classes
             )
-            self.Classifier2 = nn.Sequential(
-                nn.Linear(128, 256),
-                nn.Linear(256, n_classes)
+
+            self.Classifier2 = get_large_classifier(
+                in_features_size=self.in_features_size,
+                n_classes=self.n_classes
             )
+
             self.lr_mult = 1
             self.decay_mult = 1
 
         if base_model == 'DigitsMU':
             self.Generator = DigitsMU(n_classes=n_classes)
             self.in_features_size = 1024
-            self.Classifier1 = nn.Sequential(
-                nn.Linear(1024, 256),
-                nn.Linear(256, n_classes)
+
+            self.Classifier1 = get_small_classifier(
+                in_features_size=self.in_features_size,
+                n_classes=self.n_classes
             )
-            self.Classifier2 = nn.Sequential(
-                nn.Linear(1024, 256),
-                nn.Linear(256, n_classes)
+
+            self.Classifier2 = get_small_classifier(
+                in_features_size=self.in_features_size,
+                n_classes=self.n_classes
             )
+
             self.lr_mult = 1
             self.decay_mult = 1
 
@@ -437,35 +528,123 @@ class MCD(nn.Module):
         return parameters
 
 
-class SmallAdversarialNetwork(nn.Module):
-    def __init__(self, in_feature, hidden_size, lr_mult=10, decay_mult=2, output_num=1, sigmoid=True):
-        super(SmallAdversarialNetwork, self).__init__()
-        self.in_feature = in_feature
-        self.hidden_size = hidden_size
-        self.lr_mult = lr_mult
-        self.decay_mult = decay_mult
+class MCD2(nn.Module):
+    def __init__(self, n_classes, base_model, pretrained=True):
+        super(MCD2, self).__init__()
 
-        self.discriminator = nn.Sequential(
-            nn.Linear(in_feature, 1024),
-            nn.ReLU(),
-            nn.Linear(1024, output_num)
-            # nn.Sigmoid()
+        self.n_classes = n_classes
+        self.pretrained = pretrained
+        self.base_model_name = base_model
+
+        if base_model == 'ResNet50':
+            self.in_features_size = 256
+            self.Generator = ResNet50(n_classes=n_classes, pretrained=pretrained, bottleneck_dim=self.in_features_size)
+            self.Classifier1 = nn.Sequential(
+                nn.Dropout(),
+                nn.Linear(self.in_features_size, 1024),
+                nn.BatchNorm1d(1024),
+                nn.ReLU(),
+                nn.Dropout(),
+                nn.Linear(1024, 1024),
+                nn.BatchNorm1d(1024),
+                nn.ReLU(),
+                nn.Linear(1024, n_classes)
+            )
+            self.Classifier1.apply(init_weights)
+
+            self.Classifier2 = nn.Sequential(
+                nn.Dropout(),
+                nn.Linear(self.in_features_size, 1024),
+                nn.BatchNorm1d(1024),
+                nn.ReLU(),
+                nn.Dropout(),
+                nn.Linear(1024, 1024),
+                nn.BatchNorm1d(1024),
+                nn.ReLU(),
+                nn.Linear(1024, n_classes)
+            )
+            self.Classifier2.apply(init_weights)
+            self.lr_mult = 10
+            self.decay_mult = 2
+
+        if base_model == 'DigitsStoM':
+            self.Generator = DigitsStoM(n_classes=n_classes)
+            self.in_features_size = 128
+            self.Classifier1 = nn.Sequential(
+                nn.Linear(self.in_features_size, 256),
+                nn.Linear(256, n_classes)
+            )
+            self.Classifier2 = nn.Sequential(
+                nn.Linear(self.in_features_size, 256),
+                nn.Linear(256, n_classes)
+            )
+            self.lr_mult = 1
+            self.decay_mult = 1
+
+        if base_model == 'DigitsMU':
+            self.Generator = DigitsMU(n_classes=n_classes)
+            self.in_features_size = 1024
+            self.Classifier1 = nn.Sequential(
+                nn.Linear(self.in_features_size, 256),
+                nn.Linear(256, n_classes)
+            )
+            self.Classifier2 = nn.Sequential(
+                nn.Linear(self.in_features_size, 256),
+                nn.Linear(256, n_classes)
+            )
+            self.lr_mult = 1
+            self.decay_mult = 1
+
+        self.decision_layer = nn.Sequential(
+            nn.Linear(n_classes * 2, n_classes)
         )
-        if sigmoid:
-            self.discriminator.add_module(name='sigmoid', module=nn.Sigmoid())
 
-        self.output_num = output_num
+    def forward(self, x):
+        features = self.Generator(x, get_features=True, get_class_outputs=False)
 
-    def forward(self, x, alpha):
-        x = ReverseLayerF.apply(x, alpha)
+        outputs1 = self.Classifier1(features)
 
-        y = self.discriminator(x)
+        outputs2 = self.Classifier2(features)
 
-        return y
+        outputs = torch.cat(
+            [
+                nn.Softmax(dim=1)(outputs1),
+                nn.Softmax(dim=1)(outputs2)
+            ],
+            dim=1
+        )
+        decisions = self.decision_layer(outputs)
 
-    def get_parameters(self):
+        return outputs1, outputs2, decisions
+
+    def get_generator_parameters(self):
+        if self.base_model_name == 'ResNet50':
+            parameters = [
+                {'params': self.Generator.feature_extracter.parameters(), 'lr_mult': 1, 'decay_mult': 1},
+                {'params': self.Generator.bottleneck.parameters(), 'lr_mult': 10, 'decay_mult': 2},
+            ]
+            return parameters
+        else:
+            parameters = [
+                {'params': self.Generator.feature_extracter.parameters(), 'lr_mult': 1, 'decay_mult': 1},
+            ]
+            return parameters
+
+    def get_classifier1_parameters(self):
         parameters = [
-            {"params": self.discriminator.parameters(), "lr_mult": self.lr_mult, 'decay_mult': self.decay_mult}
+            {'params': self.Classifier1.parameters(), 'lr_mult': self.lr_mult, 'decay_mult': self.decay_mult},
+        ]
+        return parameters
+
+    def get_classifier2_parameters(self):
+        parameters = [
+            {'params': self.Classifier2.parameters(), 'lr_mult': self.lr_mult, 'decay_mult': self.decay_mult},
+        ]
+        return parameters
+
+    def get_decision_layer_parameters(self):
+        parameters = [
+            {'params': self.decision_layer.parameters(), 'lr_mult': self.lr_mult, 'decay_mult': self.decay_mult},
         ]
         return parameters
 
@@ -481,27 +660,27 @@ class MADA(nn.Module):
             self.base_model = ResNet50(n_classes=n_classes, pretrained=pretrained)
             self.lr_mult = 10
             self.decay_mult = 2
+            self.use_init = True
 
         if base_model == 'DigitsStoM':
             self.base_model = DigitsStoM(n_classes=n_classes)
             self.lr_mult = 1
             self.decay_mult = 1
+            self.use_init = True
 
         if base_model == 'DigitsMU':
             self.base_model = DigitsMU(n_classes=n_classes)
             self.lr_mult = 1
             self.decay_mult = 1
+            self.use_init = True
 
         self.domain_classifiers = nn.ModuleList()
         for i in range(n_classes):
             self.domain_classifiers.append(
                 AdversarialNetwork(
-                    in_feature=self.base_model.features_output_size,
-                    hidden_size=1024,
+                    in_features_size=self.base_model.features_output_size,
                     lr_mult=self.lr_mult,
                     decay_mult=self.decay_mult,
-                    output_num=1,
-                    sigmoid=True
                 )
             )
 
