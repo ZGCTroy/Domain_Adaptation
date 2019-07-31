@@ -15,8 +15,8 @@ def _check_exists(self):
 def load_Office(root_dir, domain):
     root_dir = os.path.join(root_dir, domain)
 
-    resize_size = [192,192]
-    crop_size = 160
+    resize_size = [256,256]
+    crop_size = 224
 
     T = {
         'train': transforms.Compose([
