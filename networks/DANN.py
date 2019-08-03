@@ -1,5 +1,5 @@
 from networks.Baseline import *
-
+from networks.AdversarialNetwork import AdversarialNetwork
 
 class DANN(nn.Module):
     def __init__(self, n_classes, base_model, pretrained=True):

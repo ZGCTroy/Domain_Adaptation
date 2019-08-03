@@ -8,6 +8,7 @@ from torch.utils.data import DataLoader
 from data_helpers.data_helper import *
 
 
+
 class Solver():
     def __init__(self, dataset_type, source_domain, target_domain, cuda='cuda:0',
                  pretrained=False, batch_size=32,

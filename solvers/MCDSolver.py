@@ -8,6 +8,7 @@ import torch.nn as nn
 from data_helpers.data_helper import *
 from networks.MCD import MCD
 from solvers.Solver import Solver
+import torch.nn.functional as F
 
 
 class MCDSolver(Solver):
