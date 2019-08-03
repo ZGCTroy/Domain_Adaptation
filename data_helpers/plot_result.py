@@ -12,22 +12,19 @@ pd.set_option('expand_frame_repr', False)
 
 
 def show_result(dataset, task, model):
-    root_dir = './true_logs/'
+    root_dir = '../logs/'
     path = root_dir + dataset + '/' + task + '/' + model + '.csv'
     if os.path.exists(path):
         data = pd.read_csv(path, header=0)
         if dataset == 'Digits':
-            # sort_data = data.sort_values(['val_acc', 'test_acc'], inplace=False, ascending=False)
-            # sort_data = data.sort_values(['val_loss'], inplace=False, ascending=True)
             sort_data = data.sort_values(['test_acc'], inplace=False, ascending=False)
 
         else:
-            # sort_data = data.sort_values(['train_acc','test_acc'], inplace=False, ascending=False)
             sort_data = data.sort_values(['test_acc'], inplace=False, ascending=False)
-            # sort_data = data.sort_values(['train_loss'], inplace=False, ascending=True)
 
         print(sort_data.head(3))
         print()
+
 
 def plot_Digits():
     plt.figure(dpi=900)
@@ -44,13 +41,13 @@ def plot_Digits():
         y = []
 
         for task in ['MtoU', 'UtoM', 'StoM']:
-            path = './true_logs/Digits/' + task + '/' + model + '.csv'
+            path = '../logs/Digits/' + task + '/' + model + '.csv'
             if os.path.exists(path):
+
                 data = pd.read_csv(path, header=0)
                 x.append(task)
                 y.append(data['test_acc'].max())
 
-        print(y)
         plt.plot(x, y, marker=markers[i])
 
     plt.legend(models)
@@ -74,13 +71,12 @@ def plot_Office31():
         y = []
 
         for task in ['DtoA', 'WtoA', 'AtoW', 'AtoD', 'DtoW', 'WtoD']:
-            path = './true_logs/Office31/' + task + '/' + model + '.csv'
+            path = '../logs/Office31/' + task + '/' + model + '.csv'
             if os.path.exists(path):
                 data = pd.read_csv(path, header=0)
                 x.append(task)
                 y.append(data['test_acc'].max())
 
-        print(y)
         plt.plot(x, y, marker=markers[i])
 
     plt.legend(models)
@@ -104,14 +100,12 @@ def plot_OfficeHome():
         y = []
 
         for task in ['ArtoCl', 'CltoPr', 'RetoPw']:
-            path = './true_logs/OfficeHome/' + task + '/' + model + '.csv'
-            print(path)
+            path = '../logs/OfficeHome/' + task + '/' + model + '.csv'
             if os.path.exists(path):
                 data = pd.read_csv(path, header=0)
                 x.append(task)
                 y.append(data['test_acc'].max())
 
-        print(y)
         plt.plot(x, y, marker=markers[i])
 
     plt.legend(models)
@@ -123,7 +117,7 @@ def plot_OfficeHome():
 def main():
     plot_Digits()
     plot_Office31()
-    plot_OfficeHome()
+    # plot_OfficeHome()
 
     # Digits
     # print('Digits\n')

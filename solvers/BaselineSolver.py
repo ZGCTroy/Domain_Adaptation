@@ -2,7 +2,7 @@ from __future__ import print_function, division
 
 import sys
 import time
-
+import torch
 import torch.nn as nn
 
 from networks.Baseline import DigitsStoM, DigitsMU, ResNet50
