@@ -85,14 +85,14 @@ def plot_Office31():
     plt.ylabel('Accuracy on Target Domain')
     plt.xlabel('Task')
     markers = ['^', '.', 'p','*','+']
-    models = ['Baseline', 'DANN', 'MT','MCD','MADA']
+    models = ['Baseline', 'DANN', 'MCD','MADA','MT']
     i = -1
     for model in models:
         i += 1
         x = []
         y = []
 
-        for task in ['AtoW', 'AtoD', 'DtoA', 'WtoA']:
+        for task in ['DtoA', 'WtoA', 'AtoW', 'AtoD', 'DtoW', 'WtoD']:
             path = './true_logs/Office31/' + task + '/' + model + '.csv'
             if os.path.exists(path):
                 data = pd.read_csv(path, header=0)
@@ -103,36 +103,67 @@ def plot_Office31():
         plt.plot(x, y, marker=markers[i])
 
     plt.legend(models)
-    plt.ylim((0.6, 0.95))
+    plt.ylim((0.6, 1.0))
 
     plt.show()
 
 
+def plot_OfficeHome():
+    plt.figure(dpi=900)
+    plt.rc('font', family='Times New Roman', size=13)
+    plt.grid(linestyle='--')
+    plt.ylabel('Accuracy on Target Domain')
+    plt.xlabel('Task')
+    markers = ['^', '.', 'p','*','+']
+    models = ['Baseline', 'DANN', 'MCD','MADA','MT']
+    i = -1
+    for model in models:
+        i += 1
+        x = []
+        y = []
+
+        for task in ['ArtoCl','CltoPr','RetoPw']:
+            path = './true_logs/OfficeHome/' + task + '/' + model + '.csv'
+            print(path)
+            if os.path.exists(path):
+                data = pd.read_csv(path, header=0)
+                x.append(task)
+                y.append(data['test_acc'].max())
+
+        print(y)
+        plt.plot(x, y, marker=markers[i])
+
+    plt.legend(models)
+    plt.ylim((0.3, 1.0))
+
+    plt.show()
+
 def main():
     plot_Digits()
     plot_Office31()
+    plot_OfficeHome()
 
     # Digits
     # print('Digits\n')
-    for task in ['MtoU', 'UtoM', 'StoM']:
-        for model in ['Baseline', 'DANN', 'MT','MCD']:
-            show_result(
-                dataset='Digits',
-                task=task,
-                model=model
-            )
+    # for task in ['MtoU', 'UtoM', 'StoM']:
+    #     for model in ['Baseline', 'DANN', 'MT','MCD']:
+    #         show_result(
+    #             dataset='Digits',
+    #             task=task,
+    #             model=model
+    #         )
 
     #
     # print('\n\n\nOffice31\n')
     # #
     # Office31
-    for task in ['AtoD','AtoW','DtoA','DtoW','WtoA','WtoD']:
-        for model in ['Baseline','DANN','MT']:
-            show_result(
-                dataset='Office31',
-                task=task,
-                model=model
-            )
+    # for task in ['AtoD','AtoW','DtoA','DtoW','WtoA','WtoD']:
+    #     for model in ['Baseline','DANN','MT']:
+    #         show_result(
+    #             dataset='Office31',
+    #             task=task,
+    #             model=model
+    #         )
     #
 
     # print('\n\n\nOfficeHome\n')

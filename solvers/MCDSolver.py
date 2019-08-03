@@ -88,7 +88,6 @@ class MCDSolver(Solver):
 
     def set_optimizer(self):
         if self.optimizer_type == 'Adam':
-
             self.optimizer_generator = torch.optim.Adam(
                 self.model.get_generator_parameters(),
                 lr=self.lr,
@@ -173,8 +172,9 @@ class MCDSolver(Solver):
 
         total_source_num = len(self.data_loader['source']['train'].dataset)
         processed_source_num = 0
+        source_iter = iter(self.cycle(self.data_loader['source']['train']))
 
-        for source_inputs, source_labels in self.data_loader['source']['train']:
+        for target_inputs, target_labels in self.data_loader['target']['train']:
             sys.stdout.write('\r{}/{}'.format(processed_source_num, total_source_num))
             sys.stdout.flush()
 
@@ -183,6 +183,8 @@ class MCDSolver(Solver):
             # TODO 1 : Step A
 
             self.reset_optimizer()
+
+            source_inputs, source_labels = next(source_iter)
 
             source_inputs = source_inputs.to(self.device)
 
@@ -213,9 +215,6 @@ class MCDSolver(Solver):
             loss_source1 = nn.CrossEntropyLoss()(source_outputs1, source_labels)
             loss_source2 = nn.CrossEntropyLoss()(source_outputs2, source_labels)
             loss_source = loss_source1 + loss_source2
-
-            target_iter = iter(self.data_loader['target']['train'])
-            target_inputs, target_labels = next(target_iter)
 
             target_inputs = target_inputs.to(self.device)
             target_outputs1, target_outputs2 = self.model(target_inputs)

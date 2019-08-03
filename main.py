@@ -32,6 +32,7 @@ parser.add_argument('--test_interval', type=int, default=500)
 parser.add_argument('--lr', type=float, default=0.001)
 parser.add_argument('--gamma', type=float, default=10)
 parser.add_argument('--num_k', type=int, default=4)
+parser.add_argument('--loss_weight', type=float, default=1.0)
 
 args = parser.parse_args()
 
@@ -147,7 +148,8 @@ def main():
             num_workers=args.num_workers,
             lr=args.lr,
             gamma=args.gamma,
-            optimizer_type=args.optimizer
+            optimizer_type=args.optimizer,
+            loss_weight=args.loss_weight
         )
 
     solver.solve()

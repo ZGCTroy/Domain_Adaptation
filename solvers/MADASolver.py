@@ -14,7 +14,7 @@ class MADASolver(Solver):
                  pretrained=False,
                  batch_size=32,
                  num_epochs=9999, max_iter_num=9999999, test_interval=500, test_mode=False, num_workers=2,
-                 clean_log=False, lr=0.001, gamma=10, optimizer_type='SGD'):
+                 clean_log=False, lr=0.001, gamma=10, optimizer_type='SGD', loss_weight=1.0):
         super(MADASolver, self).__init__(
             dataset_type=dataset_type,
             source_domain=source_domain,
@@ -35,6 +35,7 @@ class MADASolver(Solver):
         self.model_name = 'MADA'
         self.iter_num = 0
         self.class_weight = None
+        self.loss_weight = loss_weight
 
     def get_alpha(self, delta=10.0):
         if self.num_epochs != 999999:
@@ -46,14 +47,12 @@ class MADASolver(Solver):
 
     def set_model(self):
         if self.dataset_type == 'Digits':
-            self.loss_weight = 1.0
             if self.task in ['MtoU', 'UtoM']:
                 self.model = MADA(n_classes=self.n_classes, base_model='DigitsMU')
             if self.task in ['StoM']:
                 self.model = MADA(n_classes=self.n_classes, base_model='DigitsStoM')
 
         if self.dataset_type in ['Office31', 'OfficeHome']:
-            self.loss_weight = 1.0
             self.model = MADA(n_classes=self.n_classes, base_model='ResNet50')
 
         if self.pretrained:
@@ -62,7 +61,9 @@ class MADASolver(Solver):
         self.model = self.model.to(self.device)
 
     def test(self, data_loader):
-        self.model.eval()
+
+        model = self.model
+        model.eval()
 
         total_loss = 0
         corrects = 0
@@ -79,7 +80,7 @@ class MADASolver(Solver):
             # print('inputs ',inputs.size())
             # print('labels ',labels.size())
 
-            class_outputs = self.model(inputs, test_mode=True)
+            class_outputs = model(inputs, test_mode=True)
 
             # print('class outputs ',class_outputs.size())
 
@@ -101,6 +102,7 @@ class MADASolver(Solver):
         acc = corrects / processed_num
         average_loss = total_loss / processed_num
         print('\nData size = {} , corrects = {}'.format(processed_num, corrects))
+        print('loss weight =', self.loss_weight)
 
         return average_loss, acc
 
@@ -115,7 +117,6 @@ class MADASolver(Solver):
         processed_target_num = 0
         total_source_num = 0
 
-        # class_criterion = nn.CrossEntropyLoss(weight=self.class_weight.view(-1))
         class_criterion = nn.CrossEntropyLoss()
 
         alpha = 0
@@ -157,7 +158,8 @@ class MADASolver(Solver):
             # TODO 3 : LOSS
 
             # loss_weight = torch.Tensor(self.n_classes,device=self.device)
-            loss = self.loss_weight * 0.5 * self.n_classes * (target_domain_loss + source_domain_loss) + source_class_loss
+            loss = self.loss_weight * self.n_classes * 0.5 * (
+                        target_domain_loss + source_domain_loss) + source_class_loss
 
             loss.backward()
 

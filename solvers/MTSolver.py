@@ -79,12 +79,12 @@ class MTSolver(Solver):
         if self.dataset_type == 'Office31':
             self.confidence_thresh = 0.90
             self.loss_weight = 10.0
-            self.model = MT(n_classes=self.n_classes, base_model='ResNet50', use_dropout=True)
+            self.model = MT(n_classes=self.n_classes, base_model='ResNet50')
 
         if self.dataset_type == 'OfficeHome':
             self.confidence_thresh = 0.90
             self.loss_weight = 10.0
-            self.model = MT(n_classes=self.n_classes, base_model='ResNet50', use_dropout=True)
+            self.model = MT(n_classes=self.n_classes, base_model='ResNet50')
 
         if self.pretrained:
             self.load_model(path=self.models_checkpoints_dir + '/' + self.model_name + '_best_test.pt')
@@ -147,20 +147,25 @@ class MTSolver(Solver):
         theta[:, 0, 0] = theta[:, 1, 1] = 1.0
 
         if self.dataset_type in ['Office31', 'OfficeHome']:
-            # hflip
-            theta_hflip = np.random.binomial(1, 0.5, size=(N,)) * 2 - 1
-            theta[:, 0, 0] = theta_hflip.astype(np.float32)
+            # # hflip
+            # theta_hflip = np.random.binomial(1, 0.5, size=(N,)) * 2 - 1
+            # theta[:, 0, 0] = theta_hflip.astype(np.float32)
+            #
+            # # scale_u_range
+            # scl = np.exp(
+            #     np.random.uniform(
+            #         low=np.log(0.75),
+            #         high=np.log(1.33),
+            #         size=(N,)
+            #     )
+            # )
+            # theta[:, 0, 0] *= scl
+            # theta[:, 1, 1] *= scl
+            if T:
+                theta[:, :, 2:] += np.random.uniform(low=-0.2, high=0.2, size=(N, 2, 1))
 
-            # scale_u_range
-            scl = np.exp(
-                np.random.uniform(
-                    low=np.log(0.75),
-                    high=np.log(1.33),
-                    size=(N,)
-                )
-            )
-            theta[:, 0, 0] *= scl
-            theta[:, 1, 1] *= scl
+            if A:
+                theta[:, :, :2] += np.random.normal(scale=0.1, size=(N, 2, 2))
 
         else:
             if T:

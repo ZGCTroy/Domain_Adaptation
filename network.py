@@ -46,7 +46,6 @@ def get_small_classifier(in_features_size, n_classes):
 
 
 def get_large_classifier(in_features_size, n_classes):
-
     classifier = nn.Sequential(
         nn.Dropout(0.5),
         nn.Linear(in_features_size, 1024),
@@ -71,11 +70,9 @@ class AdversarialNetwork(nn.Module):
 
         self.discriminator = nn.Sequential(
             nn.Linear(self.in_features_size, 1024),
-            nn.BatchNorm1d(1024),
             nn.ReLU(),
             nn.Dropout(0.5),
             nn.Linear(1024, 1024),
-            nn.BatchNorm1d(1024),
             nn.ReLU(),
             nn.Dropout(0.5),
             nn.Linear(1024, 1),
@@ -186,6 +183,7 @@ class DigitsMU(nn.Module):
         self.use_dropout = use_dropout
 
         self.normalization_layer = nn.BatchNorm2d(1)
+
         self.feature_extracter = nn.Sequential(
             nn.Conv2d(1, 32, (5, 5)),
             nn.BatchNorm2d(32),
@@ -247,8 +245,6 @@ class ResNet50(nn.Module):
 
         resnet50 = torchvision.models.resnet50(pretrained=pretrained)
 
-        # self.normalization_layer = nn.BatchNorm2d(3)
-
         # Extracter
         self.feature_extracter = nn.Sequential(
             resnet50.conv1,
@@ -269,19 +265,15 @@ class ResNet50(nn.Module):
         if use_dropout:
             self.dropout = nn.Dropout(0.5)
 
-        # Class Classifier
-        self.classifier = get_large_classifier(
-            in_features_size=self.features_output_size,
-            n_classes=n_classes,
+        # Class Classifie
+        self.classifier = nn.Sequential(
+            nn.Linear(self.features_output_size, n_classes)
         )
         self.classifier.apply(init_weights)
 
     def forward(self, x, get_features=False, get_class_outputs=True):
         if get_features == False and get_class_outputs == False:
             return None
-
-        # x = self.normalization_layer(x)
-
         features = self.feature_extracter(x)
         features = features.view(features.size(0), -1)
         features = self.bottleneck(features)
@@ -320,19 +312,16 @@ class DANN(nn.Module):
             self.base_model = ResNet50(n_classes=n_classes, pretrained=pretrained)
             self.lr_mult = 10
             self.decay_mult = 2
-            self.use_init = True
 
         if base_model == 'DigitsStoM':
             self.base_model = DigitsStoM(n_classes=n_classes)
             self.lr_mult = 1
             self.decay_mult = 1
-            self.use_init = True
 
         if base_model == 'DigitsMU':
             self.base_model = DigitsMU(n_classes=n_classes)
             self.lr_mult = 1
             self.decay_mult = 1
-            self.use_init = True
 
         self.domain_classifier = AdversarialNetwork(
             in_features_size=self.base_model.features_output_size,
@@ -624,23 +613,19 @@ class MADA(nn.Module):
         self.pretrained = pretrained
 
         if base_model == 'ResNet50':
-            self.base_model = ResNet50(n_classes=n_classes, pretrained=pretrained)
+            self.base_model = ResNet50(n_classes=n_classes, pretrained=pretrained, bottleneck_dim=256)
             self.lr_mult = 10
             self.decay_mult = 2
-            self.use_init = True
-            self.use_dropout = True
 
         if base_model == 'DigitsStoM':
             self.base_model = DigitsStoM(n_classes=n_classes)
             self.lr_mult = 1
             self.decay_mult = 1
-            self.use_init = True
 
         if base_model == 'DigitsMU':
             self.base_model = DigitsMU(n_classes=n_classes)
             self.lr_mult = 1
             self.decay_mult = 1
-            self.use_init = True
 
         self.domain_classifiers = nn.ModuleList()
         for i in range(n_classes):
