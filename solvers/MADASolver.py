@@ -1,11 +1,13 @@
 from __future__ import print_function, division
-import torch.nn as nn
-import time
-from data_helper import *
+
 import sys
+import time
+
+import torch.nn as nn
+
+from data_helpers.data_helper import *
+from networks.MADA import MADA
 from solvers.Solver import Solver
-from network import MADA
-import numpy as np
 
 
 class MADASolver(Solver):

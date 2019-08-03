@@ -1,11 +1,11 @@
 import argparse
+import os
+
 from solvers.BaselineSolver import BaselineSolver
 from solvers.DANNSolver import DANNSolver
-from solvers.MTSolver import MTSolver
-from solvers.MCDSolver import MCDSolver
 from solvers.MADASolver import MADASolver
-from solvers.MCD2Solver import MCD2Solver
-import os
+from solvers.MCDSolver import MCDSolver
+from solvers.MTSolver import MTSolver
 
 print(os.getcwd())
 os.chdir(os.getcwd())

@@ -1,11 +1,13 @@
 from __future__ import print_function, division
-import torch.nn as nn
-import time
-from data_helper import *
+
 import sys
+import time
+
+import torch.nn as nn
+
+from data_helpers.data_helper import *
+from networks.DANN import DANN
 from solvers.Solver import Solver
-from network import DANN
-import numpy as np
 
 
 class DANNSolver(Solver):

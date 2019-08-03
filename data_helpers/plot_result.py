@@ -29,33 +29,14 @@ def show_result(dataset, task, model):
         print(sort_data.head(3))
         print()
 
-
-def show_result_on_server(server, dataset, task, model):
-    root_dir = '/Users/zhengguangcong/Desktop/logs/' + str(server)
-    path = root_dir + '/' + dataset + '/' + task + '/' + model + '.csv'
-    if os.path.exists(path):
-        data = pd.read_csv(path, header=0)
-        if dataset == 'Digits':
-            sort_data = data.sort_values(['val_acc', 'test_acc'], inplace=False, ascending=False)
-            sort_data = data.sort_values(['val_loss'], inplace=False, ascending=True)
-            # sort_data = data.sort_values(['test_acc'], inplace=False, ascending=False)
-        else:
-            # sort_data = data.sort_values(['train_acc','test_acc'], inplace=False, ascending=False)
-            # sort_data = data.sort_values(['test_acc'], inplace=False, ascending=False)
-            sort_data = data.sort_values(['train_loss'], inplace=False, ascending=True)
-
-        print(sort_data.head(3))
-        print()
-
-
 def plot_Digits():
     plt.figure(dpi=900)
     plt.rc('font', family='Times New Roman', size=13)
     plt.grid(linestyle='--')
     plt.ylabel('Accuracy on Target Domain')
     plt.xlabel('Task')
-    markers = ['^', '.', 'p','*','+']
-    models = ['Baseline', 'DANN','MT','MCD','MADA']
+    markers = ['^', '.', 'p', '*', '+']
+    models = ['Baseline', 'DANN', 'MT', 'MCD', 'MADA']
     i = -1
     for model in models:
         i += 1
@@ -84,8 +65,8 @@ def plot_Office31():
     plt.grid(linestyle='--')
     plt.ylabel('Accuracy on Target Domain')
     plt.xlabel('Task')
-    markers = ['^', '.', 'p','*','+']
-    models = ['Baseline', 'DANN', 'MCD','MADA','MT']
+    markers = ['^', '.', 'p', '*', '+']
+    models = ['Baseline', 'DANN', 'MCD', 'MADA', 'MT']
     i = -1
     for model in models:
         i += 1
@@ -114,15 +95,15 @@ def plot_OfficeHome():
     plt.grid(linestyle='--')
     plt.ylabel('Accuracy on Target Domain')
     plt.xlabel('Task')
-    markers = ['^', '.', 'p','*','+']
-    models = ['Baseline', 'DANN', 'MCD','MADA','MT']
+    markers = ['^', '.', 'p', '*', '+']
+    models = ['Baseline', 'DANN', 'MCD', 'MADA', 'MT']
     i = -1
     for model in models:
         i += 1
         x = []
         y = []
 
-        for task in ['ArtoCl','CltoPr','RetoPw']:
+        for task in ['ArtoCl', 'CltoPr', 'RetoPw']:
             path = './true_logs/OfficeHome/' + task + '/' + model + '.csv'
             print(path)
             if os.path.exists(path):
@@ -137,6 +118,7 @@ def plot_OfficeHome():
     plt.ylim((0.3, 1.0))
 
     plt.show()
+
 
 def main():
     plot_Digits()

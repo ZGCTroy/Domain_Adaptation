@@ -1,12 +1,13 @@
 from __future__ import print_function, division
-import torch.nn as nn
-import time
-from data_helper import *
+
 import sys
+import time
+
+import torch.nn as nn
+
+from data_helpers.data_helper import *
+from networks.MCD import MCD
 from solvers.Solver import Solver
-from network import MCD
-import numpy as np
-from torch.nn import functional as F
 
 
 class MCDSolver(Solver):

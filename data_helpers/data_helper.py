@@ -1,11 +1,12 @@
-from torchvision import datasets
-from PIL import Image
-import numpy as np
-from torch.utils import data
-import h5py
 import os
-from torchvision import transforms
+
+import h5py
+import numpy as np
 import torch
+from PIL import Image
+from torch.utils import data
+from torchvision import datasets
+from torchvision import transforms
 
 
 class USPSDataset(data.Dataset):
@@ -36,11 +37,6 @@ class USPSDataset(data.Dataset):
 
         label = torch.tensor(self.labels[index], dtype=torch.long)
         return [img, label]
-
-
-def _check_exists(self):
-    return os.path.exists(os.path.join(self.root, self.training_file)) and \
-           os.path.exists(os.path.join(self.root, self.test_file))
 
 
 def load_Office(root_dir, domain):
@@ -216,4 +212,3 @@ def cal_mean_and_std():
     data_std1 = np.array(data_std1).mean(axis=0)
 
     print(data_mean, data_std0, data_std1)
-

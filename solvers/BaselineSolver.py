@@ -1,11 +1,12 @@
 from __future__ import print_function, division
-import torch.nn as nn
-import time
-from data_helper import *
-import sys
-from solvers.Solver import Solver
 
-from network import ResNet50, DigitsMU, DigitsStoM
+import sys
+import time
+
+import torch.nn as nn
+
+from networks.Baseline import DigitsStoM, DigitsMU, ResNet50
+from solvers.Solver import Solver
 
 
 class BaselineSolver(Solver):
