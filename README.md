@@ -36,14 +36,12 @@
 ## Installation
 
 * Install with pip 
-  
-        $ pip install torch
-    
-        $ pip install torchvision
         
         $ git clone https://github.com/ZGCTroy/Domain_Adaptation
         
         $ cd Domain_Adaptation
+        
+        $ pip install -r requirements.txt
     
 * Install with docker (recommended)
 
@@ -54,7 +52,7 @@
 ## Download Datasets
 * If you install with docker, you do not have to prepare datasets. As datasets have already been included in docker image.
  
-* If you install environment with pip, you have to download datasets by yourself and put them in ./data, and it will look like
+* If you install with pip, you have to download datasets by yourself and put them in ./data, and it will look like
     
         - Digits
         -- -- MNIST
@@ -87,17 +85,20 @@
     
     * Digits Dataset
     
+            $ --dataset='Digits'
             $ --source='MNIST' --target='USPS'
             $ --source='USPS' --target='MNIST'
             $ --source='SVHN' --target='MNIST'
     
     * Office31 Dataset
             
+            $ --dataset='Office31'
             $ --source=['Amazon','Webcam','Dslr']
             $ --target=['Amazon','Webcam','Dslr']
             
     * OfficeHome Dataset
             
+            $ --dataset='OfficeHome'
             $ --source=['Art','Clipart','Product','Real World']
             $ --target=['Art','Clipart','Product','Real World']
            

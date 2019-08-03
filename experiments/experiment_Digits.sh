@@ -63,13 +63,13 @@ python3.6 ../main.py --model='MCD2' --dataset='Digits' --source='SVHN' --target=
 # MADA
 
 python3.6 ../main.py --model='MADA' --dataset='Digits' --source='USPS' --target='MNIST' \
---cuda='cuda:2' --num_workers=0 --epochs=300 --batch_size=256 --test_interval=1 --optimizer='Adam'
+--cuda='cuda:2' --num_workers=0 --epochs=300 --batch_size=256 --test_interval=1 --optimizer='Adam' --loss_weight=0.5
 
 python3.6 ../main.py --model='MADA' --dataset='Digits' --source='MNIST' --target='USPS' \
---cuda='cuda:0' --num_workers=0 --epochs=300 --batch_size=256 --test_interval=1 --optimizer='Adam'
+--cuda='cuda:0' --num_workers=0 --epochs=300 --batch_size=256 --test_interval=1 --optimizer='Adam' --loss_weight=0.5
 
 python3.6 ../main.py --model='MADA' --dataset='Digits' --source='SVHN' --target='MNIST' \
---cuda='cuda:0' --num_workers=0 --epochs=300 --batch_size=256 --test_interval=1 --optimizer='Adam'
+--cuda='cuda:0' --num_workers=0 --epochs=300 --batch_size=256 --test_interval=1 --optimizer='Adam' --loss_weight=0.5
 
 
 
