@@ -77,27 +77,12 @@ class MADASolver(Solver):
             inputs = inputs.to(self.device)
             labels = labels.to(self.device)
 
-            # print('inputs ',inputs.size())
-            # print('labels ',labels.size())
-
             class_outputs = model(inputs, test_mode=True)
 
-            # print('class outputs ',class_outputs.size())
-
             _, preds = torch.max(class_outputs, 1)
-            # print('preds ',preds.size())
 
-            # loss = nn.CrossEntropyLoss()(class_outputs, labels)
-
-            # total_loss += loss.item() * labels.size()[0]
             corrects += (preds == labels.data).sum().item()
             processed_num += labels.size()[0]
-
-            # self.model.train(False)
-            # self.class_weight = torch.mean(nn.Softmax(dim=1)(class_outputs), 0)
-            # self.class_weight = (self.class_weight / torch.mean(self.class_weight))
-            # self.class_weight = self.class_weight.view(-1)
-            # self.class_weight = self.class_weight.detach()
 
         acc = corrects / processed_num
         average_loss = total_loss / processed_num
@@ -157,9 +142,8 @@ class MADASolver(Solver):
 
             # TODO 3 : LOSS
 
-            # loss_weight = torch.Tensor(self.n_classes,device=self.device)
             loss = self.loss_weight * self.n_classes * 0.5 * (
-                        target_domain_loss + source_domain_loss) + source_class_loss
+                    target_domain_loss + source_domain_loss) + source_class_loss
 
             loss.backward()
 

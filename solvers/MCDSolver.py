@@ -62,6 +62,7 @@ class MCDSolver(Solver):
 
         corrects1 = 0
         corrects2 = 0
+        corrects = 0
         data_num = len(data_loader.dataset)
         processed_num = 0
 
@@ -73,15 +74,14 @@ class MCDSolver(Solver):
             labels = labels.to(self.device)
 
             outputs1, outputs2 = self.model(inputs)
-            _, preds1 = torch.max(outputs1, 1)
-            _, preds2 = torch.max(outputs2, 1)
+            outputs = nn.Softmax(dim=1)(outputs1) + nn.Softmax(dim=1)(outputs2)
 
-            corrects1 += (preds1 == labels.data).sum().item()
-            corrects2 += (preds2 == labels.data).sum().item()
+            _, preds = torch.max(outputs, 1)
+            corrects += (preds == labels.data).sum().item()
 
             processed_num += labels.size()[0]
 
-        acc = (corrects1 + corrects2) / (processed_num * 2)
+        acc = corrects / processed_num
         print('\nData size = {} , corrects = {}'.format(processed_num, (corrects1 + corrects2) / 2))
 
         return 0, acc

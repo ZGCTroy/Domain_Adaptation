@@ -1,10 +1,41 @@
 from torchvision import datasets
+from PIL import Image
+import numpy as np
+from torch.utils import data
+import h5py
 import os
 from torchvision import transforms
-import numpy as np
 import torch
-from datasets import USPSDataset
-from PIL import Image
+
+
+class USPSDataset(data.Dataset):
+    def __init__(self, root_dir, train=True, transform=None):
+        self.transform = transform
+        self.root_dir = root_dir
+        with h5py.File(os.path.join(root_dir, 'usps.h5'), 'r') as hf:
+            if train:
+                d = hf.get('train')
+            else:
+                d = hf.get('test')
+
+            # format:(7291, 256)
+            self.samples = d.get('data')[:]
+
+            # format:(7291,)
+            self.labels = d.get('target')[:]
+
+    def __len__(self):
+        return len(self.labels)
+
+    def __getitem__(self, index):
+        img = self.samples[index]
+        img = img.reshape(16, 16)
+        img = img[:, :, np.newaxis]
+        if self.transform is not None:
+            img = self.transform(img)
+
+        label = torch.tensor(self.labels[index], dtype=torch.long)
+        return [img, label]
 
 
 def _check_exists(self):
@@ -15,7 +46,7 @@ def _check_exists(self):
 def load_Office(root_dir, domain):
     root_dir = os.path.join(root_dir, domain)
 
-    resize_size = [256,256]
+    resize_size = [256, 256]
     crop_size = 224
 
     T = {
@@ -84,8 +115,8 @@ def load_USPS(root_dir):
         ]
     }
 
-    T['train'].append(transforms.Resize([28, 28],interpolation=Image.BILINEAR))
-    T['test'].append(transforms.Resize([28, 28],interpolation=Image.BILINEAR))
+    T['train'].append(transforms.Resize([28, 28], interpolation=Image.BILINEAR))
+    T['test'].append(transforms.Resize([28, 28], interpolation=Image.BILINEAR))
 
     T['train'].append(transforms.ToTensor())
     T['test'].append(transforms.ToTensor())
@@ -186,46 +217,3 @@ def cal_mean_and_std():
 
     print(data_mean, data_std0, data_std1)
 
-
-def main():
-    cal_mean_and_std()
-
-    # # USPS train [7291,1,16,16] test [2007,1,16,16]
-    # USPS = load_USPS(root_dir='./data/Digits/USPS', resize_size=16)
-    #
-    # # SVHN train [73257,3,32,32] test [26032,3,32,32]
-    # SVHN = load_SVHN(root_dir='./data/Digits/SVHN', resize_size=32)
-    #
-    # root_dir = './data/Office31'
-    # # Office31 31 classes , Amazon 2817
-    # Amazon = load_Amazon(os.path.join(root_dir, 'Amazon'), resize_size= 256, crop_size = 224)
-    # print(Amazon)
-    #
-    # # Office31 31 classes , Dslr 498
-    # Dslr = load_Dslr(os.path.join(root_dir, 'Dslr'), resize_size= 256, crop_size = 224)
-    # print(Dslr)
-    #
-    # # Office31 31 classes , Webcam 795
-    # Webcam = load_Webcam(os.path.join(root_dir, 'Webcam'), resize_size= 256, crop_size = 224)
-    # print(Webcam)
-    #
-    # root_dir = './data/Office-Home'
-    # # OfficeHome 65 classes , Art 2427 RGB
-    # Art = load_Art(os.path.join(root_dir, 'Art'), resize_size= 256, crop_size = 224)
-    # print(Art)
-    #
-    # # OfficeHome 65 classes , Clipart 4365 RGB
-    # Clipart = load_Clipart(os.path.join(root_dir, 'Clipart'), resize_size= 256, crop_size = 224)
-    # print(Clipart)
-    #
-    # # OfficeHome 65 classes , Product 4439 RGB
-    # Product = load_Product(os.path.join(root_dir, 'Product'), resize_size= 256, crop_size = 224)
-    # print(Product)
-    #
-    # # OfficeHome 65 classes , RealWorld 4357 RGB
-    # RealWorld = load_RealWorld(os.path.join(root_dir, 'Real World'), resize_size= 256, crop_size = 224)
-    # print(RealWorld)
-
-
-if __name__ == '__main__':
-    main()

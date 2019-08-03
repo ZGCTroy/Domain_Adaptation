@@ -412,6 +412,16 @@ class MCD(nn.Module):
             )
             self.Classifier2.apply(init_weights)
 
+            # self.Classifier1 = nn.Sequential(
+            #     nn.Linear(self.in_features_size, n_classes)
+            # )
+            # self.Classifier1.apply(init_weights)
+            #
+            # self.Classifier2= nn.Sequential(
+            #     nn.Linear(self.in_features_size, n_classes)
+            # )
+            # self.Classifier2.apply(init_weights)
+
             self.lr_mult = 10
             self.decay_mult = 2
 

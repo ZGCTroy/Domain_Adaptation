@@ -31,9 +31,6 @@ class OldWeightEMA(object):
             p.data.add_(src_p.data * one_minus_alpha)
 
 
-
-
-
 class MTSolver(Solver):
 
     def __init__(self, dataset_type, source_domain, target_domain, cuda='cuda:0',
@@ -176,10 +173,6 @@ class MTSolver(Solver):
 
         grid = F.affine_grid(theta=torch.from_numpy(theta), size=x.size())
         new_x = F.grid_sample(input=x, grid=grid)
-
-        # if self.dataset_type in ['Office31', 'OfficeHome']:
-        #     if random.random() < 0.5:
-        #         new_x = new_x.flip([2])
 
         return new_x
 

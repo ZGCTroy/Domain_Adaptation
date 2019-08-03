@@ -125,7 +125,6 @@ class DANNSolver(Solver):
             source_labels = source_labels.to(self.device)
 
             source_class_loss = nn.CrossEntropyLoss()(
-                # nn.Softmax(dim=1)(source_class_outputs),
                 source_class_outputs,
                 source_labels
             )
@@ -135,7 +134,7 @@ class DANNSolver(Solver):
 
             # TODO 3 : LOSS
 
-            loss = target_domain_loss + 0.5 * ( source_domain_loss + source_class_loss)
+            loss = target_domain_loss + source_domain_loss + source_class_loss
 
             loss.backward()
 
