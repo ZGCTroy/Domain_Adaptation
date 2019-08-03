@@ -255,6 +255,9 @@ class Solver():
 
         # TODO 3 : set model
         self.models_checkpoints_dir = './models_checkpoints/' + self.dataset_type + '/' + self.task
+        if not os.path.exists(self.models_checkpoints_dir):
+            os.makedirs(self.models_checkpoints_dir)
+
         self.set_model()
 
         # TODO 4 : set optimizer
@@ -293,6 +296,9 @@ class Solver():
         self.log['test_loss'].append('%.4f' % test_loss)
 
     def save_log(self):
+        if not os.path.exists(self.logs_dir):
+            os.makedirs(self.logs_dir)
+
         path = os.path.join(self.logs_dir, self.model_name + '.csv')
 
         log = pd.DataFrame(
