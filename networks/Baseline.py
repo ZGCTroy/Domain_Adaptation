@@ -41,7 +41,7 @@ def get_large_classifier(in_features_size, n_classes):
     return classifier
 
 
-# BaseLine network for "MNIST [1,28,28] <-> USPS[1,28,28]"
+# Domain_Adaptation network for "MNIST [1,28,28] <-> USPS[1,28,28]"
 class DigitsMU(nn.Module):
     def __init__(self, n_classes, use_dropout=False):
         super(DigitsMU, self).__init__()
@@ -101,7 +101,7 @@ class DigitsMU(nn.Module):
         ]
 
 
-# BaseLine network for "SVHN [3,32,32] -> MNIST [3,32,32]"
+# Domain_Adaptation network for "SVHN [3,32,32] -> MNIST [3,32,32]"
 class DigitsStoM(nn.Module):
     def __init__(self, n_classes, use_dropout=False):
         super(DigitsStoM, self).__init__()
