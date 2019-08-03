@@ -48,6 +48,11 @@
         $ docker pull zgctroy/DA
     
         $ docker run runtime='nvidia' name='zgctory/DA' -it zgctory/DA
+        
+        $ cd Domain_Adaptation
+        
+        $ git pull
+  
     
 ## Download Datasets
 * If you install with docker, you do not have to prepare datasets. As datasets have already been included in docker image.

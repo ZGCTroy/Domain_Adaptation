@@ -4,4 +4,4 @@ numpy
 pandas
 scipy
 h5py
-matplotlib2
+matplotlib
