@@ -18,13 +18,62 @@ def show_result(dataset, task, model):
     if os.path.exists(path):
         data = pd.read_csv(path, header=0)
         if dataset == 'Digits':
-            sort_data = data.sort_values(['test_acc'], inplace=False, ascending=False)
+            sort_data = data.sort_values(['test_acc'], inplace=True, ascending=False)
 
-        else:
-            sort_data = data.sort_values(['test_acc'], inplace=False, ascending=False)
 
-        print(sort_data.head(3))
-        print()
+def get_result():
+    models = ['Baseline', 'MT', 'DANN', 'MCD', 'MADA']
+    names = ['Baseline', 'MT+CT+TF', 'DANN', 'MCD', 'MADA']
+
+    tasks = ['AtoW', 'DtoW', 'WtoD', 'AtoD', 'DtoA', 'WtoA', 'Avg']
+
+    data = {
+        task: [] for task in tasks
+    }
+
+    for model in models:
+        y = []
+        for task in tasks:
+            path = '../logs/Office31/' + task + '/' + model + '.csv'
+            if os.path.exists(path):
+                tmp_data = pd.read_csv(path, header=0)
+                data[task].append(tmp_data['test_acc'].max())
+                y.append(tmp_data['test_acc'].max())
+
+        data['Avg'].append(np.average(y))
+
+    df = pd.DataFrame(
+        data=data,
+        columns=tasks,
+        index=names
+    )
+
+    print(df)
+
+    tasks = ['UtoM', 'MtoU', 'StoM', 'Avg']
+
+    data = {
+        task: [] for task in tasks
+    }
+
+    for model in models:
+        y = []
+        for task in tasks:
+            path = '../logs/Digits/' + task + '/' + model + '.csv'
+            if os.path.exists(path):
+                tmp_data = pd.read_csv(path, header=0)
+                data[task].append(tmp_data['test_acc'].max())
+                y.append(tmp_data['test_acc'].max())
+
+        data['Avg'].append(np.average(y))
+
+    df = pd.DataFrame(
+        data=data,
+        columns=tasks,
+        index=names
+    )
+
+    print(df)
 
 
 def plot_Digits():
@@ -55,7 +104,7 @@ def plot_Digits():
 
     plt.legend(names)
     plt.ylim((0.75, 1))
-    plt.savefig('../pictures/Digits_plot')
+    plt.savefig('../pictures/Digits_plot.png')
 
     plt.show()
 
@@ -91,8 +140,8 @@ def plot_Office31():
     plt.ylim((0.6, 1.0))
     plt.title('Domain Adaptation on Digits')
 
+    plt.savefig('../pictures/Office31_plot.png')
     plt.show()
-    plt.savefig('../pictures/Office31_plot')
 
 
 def bar_Office31():
@@ -113,7 +162,7 @@ def bar_Office31():
     plt.bar([i - width for i in x], avg, width=width * 2)
 
     # My Office31
-    tasks = ['AtoW','DtoW','WtoD','AtoD','DtoA','WtoA']
+    tasks = ['AtoW', 'DtoW', 'WtoD', 'AtoD', 'DtoA', 'WtoA']
     avg = []
     for model in models:
         y = []
@@ -131,8 +180,8 @@ def bar_Office31():
     plt.bar([i for i in x], [0 for i in x], tick_label=names)
 
     plt.legend(['Origin Paper', 'Reproduction'])
+    plt.savefig('../pictures/Office31_bar.png')
     plt.show()
-    plt.savefig('../pictures/Office31_bar')
 
 
 def bar_Digits():
@@ -173,8 +222,8 @@ def bar_Digits():
     plt.bar([i for i in x], [0 for i in x], tick_label=names)
 
     plt.legend(['Origin Paper', 'Reproduction'])
+    plt.savefig('../pictures/Digits_bar.png')
     plt.show()
-    plt.savefig('../pictures/Digits_bar')
 
 
 def main():
@@ -182,40 +231,8 @@ def main():
     bar_Office31()
     plot_Digits()
     plot_Office31()
-    # plot_OfficeHome()
 
-    # Digits
-    # print('Digits\n')
-    # for task in ['MtoU', 'UtoM', 'StoM']:
-    #     for model in ['Baseline', 'DANN', 'MT','MCD']:
-    #         show_result(
-    #             dataset='Digits',
-    #             task=task,
-    #             model=model
-    #         )
-
-    #
-    # print('\n\n\nOffice31\n')
-    # #
-    # Office31
-    # for task in ['AtoD','AtoW','DtoA','DtoW','WtoA','WtoD']:
-    #     for model in ['Baseline','DANN','MT']:
-    #         show_result(
-    #             dataset='Office31',
-    #             task=task,
-    #             model=model
-    #         )
-    #
-
-    # print('\n\n\nOfficeHome\n')
-    # # OfficeHome
-    # for task in ['ArtoCl','ArtoPr','ArtoRe','CltoAr','CltoPr','CltoRe','PrtoAr','PrtoCl','PrtoRe','RetoAr','RetoCl','RetoPr']:
-    #     for model in ['Baseline','DANN','MT']:
-    #         show_result(
-    #             dataset='OfficeHome',
-    #             task=task,
-    #             model=model
-    #         )
+    get_result()
 
 
 if __name__ == '__main__':
