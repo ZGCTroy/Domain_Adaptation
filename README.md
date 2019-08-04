@@ -60,12 +60,11 @@ MADA    |  0.9623|  0.9347|  0.9083|  0.935100|
 
 ![Digits](./pictures/Digits_plot.png)
 
-![Digits](./pictures/Digits_bar.png)
-
 ![Office31](./pictures/Office31_plot.png)
 
-![Office31](./pictures/Office31_bar.png)
+![Digits](./pictures/Digits_bar.png)
 
+![Office31](./pictures/Office31_bar.png)
 
 # Getting Started
 ## Installation
@@ -80,9 +79,9 @@ MADA    |  0.9623|  0.9347|  0.9083|  0.935100|
     
 * Install with docker (recommended)
 
-        $ docker pull zgctroy/DA
+        $ docker pull zgctroy/domain_adpatation:pytorch1.1.0-cuda10.0-cudnn7.5-runtime
     
-        $ docker run runtime='nvidia' name='zgctory/DA' -it zgctory/DA
+        $ docker run runtime='nvidia' -it zgctroy/domain_adpatation:pytorch1.1.0-cuda10.0-cudnn7.5-runtime
         
         $ cd Domain_Adaptation
         

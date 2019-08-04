@@ -104,6 +104,7 @@ def plot_Digits():
 
     plt.legend(names)
     plt.ylim((0.75, 1))
+    plt.title('Domain Adaptation on Digits')
     plt.savefig('../pictures/Digits_plot.png')
 
     plt.show()
@@ -138,7 +139,7 @@ def plot_Office31():
 
     plt.legend(names)
     plt.ylim((0.6, 1.0))
-    plt.title('Domain Adaptation on Digits')
+    plt.title('Domain Adaptation on Office31')
 
     plt.savefig('../pictures/Office31_plot.png')
     plt.show()
