@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 from matplotlib import pyplot as plt
+import numpy as np
 
 # 显示所有列
 pd.set_option('display.max_columns', 20)
@@ -27,13 +28,13 @@ def show_result(dataset, task, model):
 
 
 def plot_Digits():
-    plt.figure(dpi=900)
-    plt.rc('font', family='Times New Roman', size=13)
-    plt.grid(linestyle='--')
+    plt.figure(dpi=1200)
+    plt.style.use("seaborn-whitegrid")
     plt.ylabel('Accuracy on Target Domain')
     plt.xlabel('Task')
     markers = ['^', '.', 'p', '*', '+']
-    models = ['Baseline', 'DANN', 'MT', 'MCD', 'MADA']
+    models = ['Baseline', 'MT', 'DANN', 'MCD', 'MADA']
+    names = ['Baseline', 'MT+CT+TF', 'DANN', 'MCD', 'MADA']
     i = -1
     for model in models:
         i += 1
@@ -43,78 +44,142 @@ def plot_Digits():
         for task in ['MtoU', 'UtoM', 'StoM']:
             path = '../logs/Digits/' + task + '/' + model + '.csv'
             if os.path.exists(path):
-
                 data = pd.read_csv(path, header=0)
                 x.append(task)
                 y.append(data['test_acc'].max())
 
+        x.append('Average')
+        y.append(np.average(y))
+
         plt.plot(x, y, marker=markers[i])
 
-    plt.legend(models)
+    plt.legend(names)
     plt.ylim((0.75, 1))
+    plt.savefig('../pictures/Digits_plot')
 
     plt.show()
 
 
 def plot_Office31():
-    plt.figure(dpi=900)
-    plt.rc('font', family='Times New Roman', size=13)
-    plt.grid(linestyle='--')
+    plt.figure(dpi=1200)
+    plt.style.use("seaborn-whitegrid")
     plt.ylabel('Accuracy on Target Domain')
     plt.xlabel('Task')
     markers = ['^', '.', 'p', '*', '+']
-    models = ['Baseline', 'DANN', 'MCD', 'MADA', 'MT']
+    models = ['Baseline', 'MT', 'DANN', 'MCD', 'MADA']
+    names = ['Baseline', 'MT+CT+TF', 'DANN', 'MCD', 'MADA']
+    tasks = ['AtoW', 'DtoW', 'WtoD', 'AtoD', 'DtoA', 'WtoA']
+
     i = -1
     for model in models:
         i += 1
         x = []
         y = []
 
-        for task in ['DtoA', 'WtoA', 'AtoW', 'AtoD', 'DtoW', 'WtoD']:
+        for task in tasks:
             path = '../logs/Office31/' + task + '/' + model + '.csv'
             if os.path.exists(path):
                 data = pd.read_csv(path, header=0)
                 x.append(task)
                 y.append(data['test_acc'].max())
 
+        x.append('Average')
+        y.append(np.average(y))
         plt.plot(x, y, marker=markers[i])
 
-    plt.legend(models)
+    plt.legend(names)
     plt.ylim((0.6, 1.0))
+    plt.title('Domain Adaptation on Digits')
 
     plt.show()
+    plt.savefig('../pictures/Office31_plot')
 
 
-def plot_OfficeHome():
-    plt.figure(dpi=900)
-    plt.rc('font', family='Times New Roman', size=13)
-    plt.grid(linestyle='--')
-    plt.ylabel('Accuracy on Target Domain')
+def bar_Office31():
+    plt.figure(dpi=1200)
+    plt.style.use("seaborn-whitegrid")
+    plt.ylabel('Average classification accuracy on Target Domain')
     plt.xlabel('Task')
-    markers = ['^', '.', 'p', '*', '+']
-    models = ['Baseline', 'DANN', 'MCD', 'MADA', 'MT']
-    i = -1
+    plt.ylim((0.7, 1.0))
+    plt.title('Average Classification Accuracy on Office31')
+
+    models = ['Baseline', 'MT', 'DANN', 'MCD', 'MADA']
+    names = ['Baseline', 'MT+CT+TF', 'DANN', 'MCD', 'MADA']
+    x = [1, 2, 3, 4, 5]
+    width = 0.15
+
+    # Origin Office31
+    avg = [0.761, 0, 0.813, 0, 0.852]
+    plt.bar([i - width for i in x], avg, width=width * 2)
+
+    # My Office31
+    tasks = ['AtoW','DtoW','WtoD','AtoD','DtoA','WtoA']
+    avg = []
     for model in models:
-        i += 1
-        x = []
         y = []
 
-        for task in ['ArtoCl', 'CltoPr', 'RetoPw']:
-            path = '../logs/OfficeHome/' + task + '/' + model + '.csv'
+        for task in tasks:
+            path = '../logs/Office31/' + task + '/' + model + '.csv'
             if os.path.exists(path):
                 data = pd.read_csv(path, header=0)
-                x.append(task)
                 y.append(data['test_acc'].max())
 
-        plt.plot(x, y, marker=markers[i])
+        avg.append(np.average(y))
 
-    plt.legend(models)
-    plt.ylim((0.3, 1.0))
+    plt.bar([i + width for i in x], avg, width=width * 2)
 
+    plt.bar([i for i in x], [0 for i in x], tick_label=names)
+
+    plt.legend(['Origin Paper', 'Reproduction'])
     plt.show()
+    plt.savefig('../pictures/Office31_bar')
+
+
+def bar_Digits():
+    plt.figure(dpi=1200)
+    plt.style.use("seaborn-whitegrid")
+    plt.ylabel('Average classification accuracy on Target Domain')
+    plt.xlabel('Task')
+    plt.ylim((0.7, 1.0))
+    plt.title('Average Classification Accuracy on Digits')
+    plt.legend(['Origin Paper', 'Reproduction'])
+
+    models = ['Baseline', 'MT', 'DANN', 'MCD', 'MADA']
+    names = ['Baseline', 'MT+CT+TF', 'DANN', 'MCD', 'MADA']
+
+    x = [1, 2, 3, 4, 5]
+    width = 0.15
+
+    # Origin Digits
+    avg = [0, 0.985, 0, 0.9483, 0]
+    plt.bar([i - width for i in x], avg, width=width * 2)
+
+    # My Digits
+    tasks = ['MtoU', 'UtoM', 'StoM']
+    avg = []
+    for model in models:
+        y = []
+
+        for task in tasks:
+            path = '../logs/Digits/' + task + '/' + model + '.csv'
+            if os.path.exists(path):
+                data = pd.read_csv(path, header=0)
+                y.append(data['test_acc'].max())
+
+        avg.append(np.average(y))
+
+    plt.bar([i + width for i in x], avg, width=width * 2)
+
+    plt.bar([i for i in x], [0 for i in x], tick_label=names)
+
+    plt.legend(['Origin Paper', 'Reproduction'])
+    plt.show()
+    plt.savefig('../pictures/Digits_bar')
 
 
 def main():
+    bar_Digits()
+    bar_Office31()
     plot_Digits()
     plot_Office31()
     # plot_OfficeHome()

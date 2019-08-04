@@ -1,4 +1,5 @@
 # Reproducing
+## Implementation
 * Baseline 
     | [ResNet50](http://openaccess.thecvf.com/content_cvpr_2016/html/He_Deep_Residual_Learning_CVPR_2016_paper.html)
     | [Network](https://github.com/ZGCTroy/Domain_Adaptation/tree/master/networks/Baseline.py) 
@@ -32,6 +33,12 @@
     | [Solver](https://github.com/ZGCTroy/Domain_Adaptation/tree/master/solvers/MADASolver.py)
     |
    
+## Results
+![Office31](./pictures/Office31_bar.png)
+
+![Digits](./pictures/Digits_bar.png)
+
+
 # Getting Started
 ## Installation
 
@@ -76,12 +83,16 @@
         -- -- Read-World
 
 ## RUN
-* run Baseline on Digits, from MNIST to USPS
+* run Baseline on Digits, from USPS to MNIST
 
-        $ python3.6 main.py --model='Baseline' --dataset='Digits' --source='MNIST' --target='USPS' \
+        $ python3.6 main.py --model='Baseline' --dataset='Digits' --source='USPS' --target='MNIST'\
          --cuda='cuda:0' --num_workers=0 --epochs=300 --batch_size=256 --test_interval=1 --optimizer='Adam'
          
-
+* run Baseline on Office31, from Webcam to Dslr
+        
+        $ python3.6 main.py --model='Baseline' --dataset='Office31' --source='Dslr' --target='Webcam' \
+        --cuda='cuda:0' --num_workers=0  --iterations=10004  --test_interval=100 --batch_size=36
+        
 * If you want to change the task, the model or any other experiment parameters, you can choose them from the following list.
 
     * model
