@@ -18,7 +18,7 @@ def init_weights(m):
 
 def get_small_classifier(in_features_size, n_classes):
     small_classifier = nn.Sequential(
-        nn.Linear(in_features_size, 256),
+        nn.Linear(in_features_size, n_classes),
         nn.BatchNorm1d(256),
         nn.ReLU(),
         nn.Linear(256, n_classes),
@@ -150,9 +150,8 @@ class DigitsStoM(nn.Module):
 
         self.features_output_size = 128
 
-        self.classifier = get_large_classifier(
-            in_features_size=self.features_output_size,
-            n_classes=n_classes
+        self.classifier = nn.Sequential(
+            nn.Linear(self.features_output_size, n_classes)
         )
 
     def forward(self, x, get_features=False, get_class_outputs=True):

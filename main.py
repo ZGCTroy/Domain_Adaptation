@@ -23,6 +23,7 @@ parser.add_argument('--test_mode', action='store_true', default=False)
 parser.add_argument('--pretrained', action='store_true', default=False)
 parser.add_argument('--if_test', action='store_true', default=False)
 parser.add_argument('--use_CT', action='store_true', default=False)
+parser.add_argument('--use_augment', action='store_true', default=False)
 
 parser.add_argument('--batch_size', type=int, default=36)
 parser.add_argument('--num_workers', type=int, default=2)
@@ -73,7 +74,8 @@ def main():
             num_workers=args.num_workers,
             lr = args.lr,
             gamma=args.gamma,
-            optimizer_type=args.optimizer
+            optimizer_type=args.optimizer,
+            use_augment=args.use_augment
         )
 
     if args.model == 'MT':

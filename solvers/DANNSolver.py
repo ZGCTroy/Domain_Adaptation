@@ -16,7 +16,7 @@ class DANNSolver(Solver):
                  pretrained=False,
                  batch_size=32,
                  num_epochs=9999, max_iter_num=9999999, test_interval=500, test_mode=False, num_workers=2,
-                 clean_log=False, lr=0.001, gamma=10, optimizer_type='SGD'):
+                 clean_log=False, lr=0.001, gamma=10, optimizer_type='SGD', use_augment = False):
         super(DANNSolver, self).__init__(
             dataset_type=dataset_type,
             source_domain=source_domain,
@@ -36,6 +36,7 @@ class DANNSolver(Solver):
         )
         self.model_name = 'DANN'
         self.iter_num = 0
+        self.use_augment = use_augment
 
     def get_alpha(self, delta=10.0):
         if self.num_epochs != 999999:
@@ -87,6 +88,24 @@ class DANNSolver(Solver):
 
         return average_loss, acc
 
+    def augment(self, x, T=True, A=True):
+        # tmp = torch.Tensor(x) + torch.randn_like(x) * 0.1
+
+        N = x.size(0)
+        theta = np.zeros((N, 2, 3), dtype=np.float32)
+        theta[:, 0, 0] = theta[:, 1, 1] = 1.0
+
+        if T:
+            theta[:, :, 2:] += np.random.uniform(low=-0.2, high=0.2, size=(N, 2, 1))
+
+        if A:
+            theta[:, :, :2] += np.random.normal(scale=0.1, size=(N, 2, 2))
+
+        grid = F.affine_grid(theta=torch.from_numpy(theta), size=x.size())
+        new_x = F.grid_sample(input=x, grid=grid)
+
+        return new_x
+
     def train_one_epoch(self):
         since = time.time()
         self.model.train()
@@ -110,7 +129,8 @@ class DANNSolver(Solver):
             alpha = self.get_alpha()
 
             # TODO 1 : Target Train
-
+            if self.use_augment:
+                target_inputs = self.augment(target_inputs)
             target_inputs = target_inputs.to(self.device)
             target_domain_outputs = self.model(target_inputs, alpha=alpha, test_mode=False, is_source=False)
             target_domain_labels = torch.ones((target_labels.size(0), 1), device=self.device)
@@ -120,6 +140,8 @@ class DANNSolver(Solver):
 
             source_iter = iter(self.data_loader['source']['train'])
             source_inputs, source_labels = next(source_iter)
+            if self.use_augment:
+                source_inputs = self.augment(source_inputs)
             source_inputs = source_inputs.to(self.device)
 
             source_domain_outputs, source_class_outputs = self.model(source_inputs, alpha=alpha, test_mode=False,

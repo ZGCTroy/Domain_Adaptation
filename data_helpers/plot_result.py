@@ -159,7 +159,7 @@ def bar_Office31():
     width = 0.15
 
     # Origin Office31
-    avg = [0.761, 0, 0.813, 0, 0.852]
+    avg = [0.761, 0, 0.822, 0, 0.852]
     plt.bar([i - width for i in x], avg, width=width * 2)
 
     # My Office31
