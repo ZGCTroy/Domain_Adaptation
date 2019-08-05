@@ -8,6 +8,7 @@ import torch.nn as nn
 from data_helpers.data_helper import *
 from networks.DANN import DANN
 from solvers.Solver import Solver
+import torch.nn.functional as F
 
 
 class DANNSolver(Solver):
