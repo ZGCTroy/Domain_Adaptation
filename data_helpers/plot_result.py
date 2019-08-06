@@ -77,7 +77,7 @@ def get_result():
 
 
 def plot_Digits():
-    plt.figure(dpi=1200)
+    plt.figure(dpi=600)
     plt.style.use("seaborn-whitegrid")
     plt.ylabel('Accuracy on Target Domain')
     plt.xlabel('Task')
@@ -111,7 +111,7 @@ def plot_Digits():
 
 
 def plot_Office31():
-    plt.figure(dpi=1200)
+    plt.figure(dpi=600)
     plt.style.use("seaborn-whitegrid")
     plt.ylabel('Accuracy on Target Domain')
     plt.xlabel('Task')
@@ -146,7 +146,7 @@ def plot_Office31():
 
 
 def bar_Office31():
-    plt.figure(dpi=1200)
+    plt.figure(dpi=600)
     plt.style.use("seaborn-whitegrid")
     plt.ylabel('Average classification accuracy on Target Domain')
     plt.xlabel('Task')
@@ -186,7 +186,7 @@ def bar_Office31():
 
 
 def bar_Digits():
-    plt.figure(dpi=1200)
+    plt.figure(dpi=600)
     plt.style.use("seaborn-whitegrid")
     plt.ylabel('Average classification accuracy on Target Domain')
     plt.xlabel('Task')
@@ -201,7 +201,7 @@ def bar_Digits():
     width = 0.15
 
     # Origin Digits
-    avg = [0, 0.985, 0, 0.9483, 0]
+    avg = [0.7536, 0.9802, 0, 0.9483, 0]
     plt.bar([i - width for i in x], avg, width=width * 2)
 
     # My Digits
