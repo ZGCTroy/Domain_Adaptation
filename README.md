@@ -36,6 +36,8 @@
 ## Results
 
 ### Digits
+
+    
 |         |UtoM    |MtoU    |StoM       |Avg|
 |---------|--------|--------|-----------|---|
 |Baseline|  0.8072|  0.8475|  0.7989|  0.817867|
@@ -44,11 +46,10 @@
 | MCD    |  0.9797|  0.9646|  0.9744| 0.972900|
 | MADA   |  0.9623|  0.9347|  0.9083|  0.935100|
 
-![Digits](./pictures/Digits_plot.png)
-
-![Digits](./pictures/Digits_bar.png)
-
-
+<figure class="half">
+    <img src="./pictures/Digits_plot.png" width="200"/>
+    <img src="./pictures/Digits_bar.png" width="200"/>
+</figure>
 
 ### Office31
 
@@ -60,9 +61,12 @@
 | MCD      | 0.9044  |0.9874  |1.000  |0.9066  |0.6880  |0.6878  |0.862367|
 | MADA     | 0.9434  |0.9836  |1.000  |0.9137  |0.7196  |0.7107  |0.878500|
 
-![Office31](./pictures/Office31_plot.png)
 
-![Office31](./pictures/Office31_bar.png)
+<figure class="half">
+    <img src="./pictures/Digits_plot.png" width="200"/>
+    <img src="./pictures/Digits_bar.png" width="200"/>
+</figure>
+
 
 # Getting Started
 ## Installation
