@@ -20,11 +20,12 @@ class ReverseLayerF(Function):
 
 
 class AdversarialNetwork(nn.Module):
-    def __init__(self, in_features_size, lr_mult=10, decay_mult=2):
+    def __init__(self, in_features_size, lr_mult=10, decay_mult=2, out_features_size=1, sigmoid=True):
         super(AdversarialNetwork, self).__init__()
         self.in_features_size = in_features_size
         self.lr_mult = lr_mult
         self.decay_mult = decay_mult
+        self.out_features_size = out_features_size
 
         self.discriminator = nn.Sequential(
             nn.Linear(self.in_features_size, 1024),
@@ -33,9 +34,10 @@ class AdversarialNetwork(nn.Module):
             nn.Linear(1024, 1024),
             nn.ReLU(),
             nn.Dropout(0.5),
-            nn.Linear(1024, 1),
-            nn.Sigmoid()
+            nn.Linear(1024, self.out_features_size),
         )
+        if sigmoid:
+            self.discriminator.add_module('sigmoid',nn.Sigmoid())
 
         self.discriminator.apply(init_weights)
 

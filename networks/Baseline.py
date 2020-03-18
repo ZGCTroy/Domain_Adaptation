@@ -18,7 +18,7 @@ def init_weights(m):
 
 def get_small_classifier(in_features_size, n_classes):
     small_classifier = nn.Sequential(
-        nn.Linear(in_features_size, n_classes),
+        nn.Linear(in_features_size, 256),
         nn.BatchNorm1d(256),
         nn.ReLU(),
         nn.Linear(256, n_classes),

@@ -56,7 +56,6 @@ class BaselineSolver(Solver):
         data_num = len(data_loader.dataset)
         batch_size = data_loader.batch_size
         processed_num = 0
-
         for inputs, labels in data_loader:
             sys.stdout.write('\r{}/{}'.format(processed_num, data_num))
             sys.stdout.flush()

@@ -1,7 +1,10 @@
-import pandas as pd
 import os
-from matplotlib import pyplot as plt
+import random
+
 import numpy as np
+import pandas as pd
+import torch
+import matplotlib.pyplot as plt
 
 # 显示所有列
 pd.set_option('display.max_columns', 20)
@@ -37,8 +40,9 @@ def get_result():
             path = '../logs/Office31/' + task + '/' + model + '.csv'
             if os.path.exists(path):
                 tmp_data = pd.read_csv(path, header=0)
-                data[task].append(tmp_data['test_acc'].max())
-                y.append(tmp_data['test_acc'].max())
+                sort_data = tmp_data.sort_values(['val_acc'], inplace=False, ascending=False)
+                data[task].append(sort_data['test_acc'][0:2].max())
+                y.append(sort_data['test_acc'][0:2].max())
 
         data['Avg'].append(np.average(y))
 
@@ -62,8 +66,9 @@ def get_result():
             path = '../logs/Digits/' + task + '/' + model + '.csv'
             if os.path.exists(path):
                 tmp_data = pd.read_csv(path, header=0)
-                data[task].append(tmp_data['test_acc'].max())
-                y.append(tmp_data['test_acc'].max())
+                sort_data = tmp_data.sort_values(['val_acc'], inplace=False, ascending=False)
+                data[task].append(sort_data['test_acc'][0:3].max())
+                y.append(sort_data['test_acc'][0:3].max())
 
         data['Avg'].append(np.average(y))
 
@@ -81,9 +86,9 @@ def plot_Digits():
     plt.style.use("seaborn-whitegrid")
     plt.ylabel('Accuracy on Target Domain')
     plt.xlabel('Task')
-    markers = ['^', '.', 'p', '*', '+']
-    models = ['Baseline', 'MT', 'DANN', 'MCD', 'MADA']
-    names = ['Baseline', 'MT+CT+TF', 'DANN', 'MCD', 'MADA']
+    markers = ['^', '.', 'p', '*', '+', 'o']
+    models = ['Baseline', 'MT', 'DANN', 'MCD', 'MADA', 'MY']
+    names = ['Baseline', 'MT+CT+TF', 'DANN', 'MCD', 'MADA', 'MY']
     i = -1
     for model in models:
         i += 1
@@ -105,7 +110,7 @@ def plot_Digits():
     plt.legend(names)
     plt.ylim((0.75, 1))
     plt.title('Domain Adaptation on Digits')
-    plt.savefig('../pictures/Digits_plot.png')
+    # plt.savefig('../pictures/Digits_plot.png')
 
     plt.show()
 
@@ -115,9 +120,9 @@ def plot_Office31():
     plt.style.use("seaborn-whitegrid")
     plt.ylabel('Accuracy on Target Domain')
     plt.xlabel('Task')
-    markers = ['^', '.', 'p', '*', '+']
-    models = ['Baseline', 'MT', 'DANN', 'MCD', 'MADA']
-    names = ['Baseline', 'MT+CT+TF', 'DANN', 'MCD', 'MADA']
+    markers = ['^', '.', 'p', '*', '+', 'o']
+    models = ['Baseline', 'MT', 'DANN', 'MCD', 'MADA', 'MY']
+    names = ['Baseline', 'MT+CT+TF', 'DANN', 'MCD', 'MADA', 'MY']
     tasks = ['AtoW', 'DtoW', 'WtoD', 'AtoD', 'DtoA', 'WtoA']
 
     i = -1
@@ -141,7 +146,7 @@ def plot_Office31():
     plt.ylim((0.6, 1.0))
     plt.title('Domain Adaptation on Office31')
 
-    plt.savefig('../pictures/Office31_plot.png')
+    # plt.savefig('../pictures/Office31_plot.png')
     plt.show()
 
 
@@ -181,7 +186,7 @@ def bar_Office31():
     plt.bar([i for i in x], [0 for i in x], tick_label=names)
 
     plt.legend(['Origin Paper', 'Reproduction'])
-    plt.savefig('../pictures/Office31_bar.png')
+    # plt.savefig('../pictures/Office31_bar.png')
     plt.show()
 
 
@@ -223,18 +228,57 @@ def bar_Digits():
     plt.bar([i for i in x], [0 for i in x], tick_label=names)
 
     plt.legend(['Origin Paper', 'Reproduction'])
-    plt.savefig('../pictures/Digits_bar.png')
+    # plt.savefig('../pictures/Digits_bar.png')
     plt.show()
 
 
-def main():
-    bar_Digits()
-    bar_Office31()
-    plot_Digits()
-    plot_Office31()
+def single_compare(path1,path2):
+    plt.figure(dpi=600)
+    plt.style.use("seaborn-whitegrid")
+    plt.ylabel('Accuracy on Target Domain')
+    plt.xlabel('time')
 
-    get_result()
+    names = ['1','2']
+    markers = ['^', '.', 'p', '*', '+', 'o']
+    if os.path.exists(path1):
+        data = pd.read_csv(path1, header=0)
+        x = data['iter']
+        y = data['test_acc']
+        plt.plot(x, y, marker = '.')
+
+
+    if os.path.exists(path2):
+        data = pd.read_csv(path2, header=0)
+        x = data['iter']
+        y = data['test_acc']
+        plt.plot(x, y, marker = 'p')
+
+
+    plt.legend(names)
+    plt.ylim((0.6, 1.0))
+    plt.show()
+    # plt.savefig('../pictures/test.png')
+    # plt.show()
+
+def main():
+    # bar_Digits()
+    # bar_Office31()
+    # plot_Digits()
+    # plot_Office31()
+    # plt.ion()
+    single_compare(
+        # path1='../logs/Digits/MtoU/MYMADA_adsigmoid_right_weighted_sigmoid_train_split.csv',
+        # path1='../logs/Digits/MtoU/MYMADA_right_weighted_sigmoid_train_split.csv',
+        path1='../logs/Digits/UtoM/MCD.csv',
+        path2='../logs/Digits/UtoM/MYMADA_BCEweight_entropyTrue_lateraugment.csv',
+        # path2='../logs/Digits/MtoU/MADA.csv'
+    )
+
+
+    # get_result()
+
 
 
 if __name__ == '__main__':
     main()
+9
