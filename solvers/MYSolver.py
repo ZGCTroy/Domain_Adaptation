@@ -108,8 +108,6 @@ class MYSolver(Solver):
         processed_target_num = 0
         total_source_num = 0
 
-        class_criterion = nn.CrossEntropyLoss()
-
         alpha = 0
         source_loss = 0
         target_loss = 0
@@ -127,13 +125,13 @@ class MYSolver(Solver):
             # TODO 1 : Source Train
             source_iter = iter(self.data_loader['source']['train'])
             source_inputs, source_labels = next(source_iter)
+            source_inputs = source_inputs.to(self.device)
+            source_labels = source_labels.to(self.device)
             batch_size = source_inputs.size()[0]
 
-            source_inputs = source_inputs.to(self.device)
             source_domain_outputs, source_class_outputs = self.model(source_inputs, alpha=alpha)
 
-            source_labels = source_labels.to(self.device)
-            source_class_loss = class_criterion(source_class_outputs, source_labels)
+            source_class_loss = nn.CrossEntropyLoss()(source_class_outputs, source_labels)
             source_class_outputs = nn.Softmax(dim=1)(source_class_outputs)
 
             source_weight = self.get_weight(source_class_outputs, h=True)
@@ -148,15 +146,14 @@ class MYSolver(Solver):
             self.optimizer.zero_grad()
 
             # TODO 2 : Target Train
-
+            augment_target_inputs = self.augment(target_inputs)
             target_inputs = target_inputs.to(self.device)
-            augment_target_inputs = self.augment(target_inputs).detach()
+            augment_target_inputs = augment_target_inputs.to(self.device)
 
             batch_size = target_inputs.size()[0]
 
             target_domain_outputs, target_class_outputs = self.model(target_inputs, alpha=alpha)
             target_class_outputs = nn.Softmax(dim=1)(target_class_outputs)
-
 
             target_weight = self.get_weight(target_class_outputs, h=True)
             target_domain_loss = nn.BCELoss(weight=target_weight.detach())(
@@ -170,9 +167,6 @@ class MYSolver(Solver):
             self.optimizer.step()
             self.optimizer.zero_grad()
 
-
-
-
             # TODO 3 : Augment LOSS
             augment_target_domain_outputs, augment_target_class_outputs = self.model(augment_target_inputs, alpha=alpha)
             augment_target_class_outputs = nn.Softmax(dim=1)(augment_target_class_outputs)
@@ -182,7 +176,6 @@ class MYSolver(Solver):
 
             loss= source_loss + target_loss + augment_loss
 
-                  # + KLloss
 
             # TODO 5 : other parameters
             total_loss += loss.item() * source_labels.size()[0]
