@@ -148,7 +148,6 @@ class MYSolver(Solver):
             # TODO 2 : Target Train
             augment_target_inputs = self.augment(target_inputs)
             target_inputs = target_inputs.to(self.device)
-            augment_target_inputs = augment_target_inputs.to(self.device)
 
             batch_size = target_inputs.size()[0]
 
@@ -168,6 +167,7 @@ class MYSolver(Solver):
             self.optimizer.zero_grad()
 
             # TODO 3 : Augment LOSS
+            augment_target_inputs = augment_target_inputs.to(self.device)
             augment_target_domain_outputs, augment_target_class_outputs = self.model(augment_target_inputs, alpha=alpha)
             augment_target_class_outputs = nn.Softmax(dim=1)(augment_target_class_outputs)
             augment_loss = self.compute_aug_loss(target_class_outputs, augment_target_class_outputs)
