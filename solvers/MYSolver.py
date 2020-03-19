@@ -129,7 +129,7 @@ class MYSolver(Solver):
             batch_size = source_inputs.size()[0]
 
             source_domain_outputs, source_class_outputs = self.model(source_inputs, alpha=alpha)
-
+            source_labels = source_labels.to(self.device)
             source_class_loss = nn.CrossEntropyLoss()(source_class_outputs, source_labels)
             source_class_outputs = nn.Softmax(dim=1)(source_class_outputs)
 
