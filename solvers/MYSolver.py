@@ -130,6 +130,8 @@ class MYSolver(Solver):
             batch_size = source_inputs.size()[0]
 
             source_domain_outputs, source_class_outputs = self.model(source_inputs, alpha=alpha)
+            source_domain_outputs = source_domain_outputs.to(device='cpu')
+            source_class_outputs = source_class_outputs.to(device='cpu')
 
             source_class_loss = nn.CrossEntropyLoss()(source_class_outputs, source_labels)
             source_class_outputs = nn.Softmax(dim=1)(source_class_outputs)
@@ -137,7 +139,7 @@ class MYSolver(Solver):
             source_weight = self.get_weight(source_class_outputs, h=True)
             source_domain_loss = nn.BCELoss(weight=source_weight.detach())(
                 source_domain_outputs.view(-1),
-                torch.zeros((batch_size * self.n_classes, ), device=self.device)
+                torch.zeros((batch_size * self.n_classes, ))
             )
 
             source_loss = source_class_loss + self.loss_weight * source_domain_loss
@@ -152,12 +154,15 @@ class MYSolver(Solver):
             batch_size = target_inputs.size()[0]
 
             target_domain_outputs, target_class_outputs = self.model(target_inputs, alpha=alpha)
+            target_domain_outputs = target_domain_outputs.to(device='cpu')
+            target_class_outputs = target_class_outputs.to(device='cpu')
+
             target_class_outputs = nn.Softmax(dim=1)(target_class_outputs)
 
-            target_weight = self.get_weight(target_class_outputs, h=True)
+            target_weight = self.get_weight(target_class_outputs.cpu(), h=True)
             target_domain_loss = nn.BCELoss(weight=target_weight.detach())(
                 target_domain_outputs.view(-1),
-                torch.ones((batch_size * self.n_classes,), device=self.device)
+                torch.ones((batch_size * self.n_classes,))
             )
 
             target_loss = self.loss_weight * target_domain_loss
@@ -169,6 +174,10 @@ class MYSolver(Solver):
             # TODO 3 : Augment LOSS
             augment_target_inputs = augment_target_inputs.to(self.device)
             augment_target_domain_outputs, augment_target_class_outputs = self.model(augment_target_inputs, alpha=alpha)
+
+            augment_target_domain_outputs = augment_target_domain_outputs.to(device='cpu')
+            augment_target_class_outputs = augment_target_class_outputs.to(device='cpu')
+
             augment_target_class_outputs = nn.Softmax(dim=1)(augment_target_class_outputs)
             augment_loss = self.compute_aug_loss(target_class_outputs, augment_target_class_outputs)
             augment_loss.backward()
