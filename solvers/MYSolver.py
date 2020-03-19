@@ -148,6 +148,12 @@ class MYSolver(Solver):
             source_loss.backward(retain_graph=True)
             self.optimizer.step()
             self.optimizer.zero_grad()
+
+            total_loss += loss.item() * source_labels.size()[0]
+            _, source_class_preds = torch.max(source_class_outputs, 1)
+            source_corrects += (source_class_preds == source_labels.data).sum().item()
+            total_source_num += source_labels.size()[0]
+
             del source_domain_outputs, source_class_outputs, source_weight
 
             # TODO 2 : Target Train
@@ -194,10 +200,7 @@ class MYSolver(Solver):
 
 
             # TODO 5 : other parameters
-            total_loss += loss.item() * source_labels.size()[0]
-            _, source_class_preds = torch.max(source_class_outputs, 1)
-            source_corrects += (source_class_preds == source_labels.data).sum().item()
-            total_source_num += source_labels.size()[0]
+
             processed_target_num += target_labels.size()[0]
             self.iter_num += 1
 
