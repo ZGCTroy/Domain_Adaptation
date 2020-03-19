@@ -126,7 +126,6 @@ class MYSolver(Solver):
             source_iter = iter(self.data_loader['source']['train'])
             source_inputs, source_labels = next(source_iter)
             source_inputs = source_inputs.to(self.device)
-            source_labels = source_labels.to(self.device)
             batch_size = source_inputs.size()[0]
 
             source_domain_outputs, source_class_outputs = self.model(source_inputs, alpha=alpha)
@@ -175,7 +174,6 @@ class MYSolver(Solver):
             augment_target_inputs = augment_target_inputs.to(self.device)
             augment_target_domain_outputs, augment_target_class_outputs = self.model(augment_target_inputs, alpha=alpha)
 
-            augment_target_domain_outputs = augment_target_domain_outputs.to(device='cpu')
             augment_target_class_outputs = augment_target_class_outputs.to(device='cpu')
 
             augment_target_class_outputs = nn.Softmax(dim=1)(augment_target_class_outputs)
