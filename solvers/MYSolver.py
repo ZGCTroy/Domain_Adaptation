@@ -136,7 +136,7 @@ class MYSolver(Solver):
             source_weight = self.get_weight(source_class_outputs.detach(), h=True)
             source_domain_loss = nn.BCELoss(weight=source_weight.detach())(
                 source_domain_outputs.view(-1),
-                torch.zeros((batch_size * self.n_classes, ))
+                torch.zeros((batch_size * self.n_classes,),device=self.device)
             )
 
             source_loss = source_class_loss + self.loss_weight * source_domain_loss
@@ -156,7 +156,7 @@ class MYSolver(Solver):
             target_weight = self.get_weight(target_class_outputs.detach(), h=True)
             target_domain_loss = nn.BCELoss(weight=target_weight.detach())(
                 target_domain_outputs.view(-1),
-                torch.ones((batch_size * self.n_classes,))
+                torch.ones((batch_size * self.n_classes,),device=self.device)
             )
 
             target_loss = self.loss_weight * target_domain_loss
