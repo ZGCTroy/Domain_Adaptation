@@ -266,11 +266,18 @@ def main():
     # plot_Digits()
     # plot_Office31()
     # plt.ion()
+    # single_compare(
+    #     # path1='../logs/Digits/MtoU/MYMADA_adsigmoid_right_weighted_sigmoid_train_split.csv',
+    #     # path1='../logs/Digits/MtoU/MYMADA_right_weighted_sigmoid_train_split.csv',
+    #     path1='../logs/Office31/AtoW/MADA.csv',
+    #     path2='../logs/Office31/AtoW/My.csv',
+    #     # path2='../logs/Digits/MtoU/MADA.csv'
+    # )
     single_compare(
         # path1='../logs/Digits/MtoU/MYMADA_adsigmoid_right_weighted_sigmoid_train_split.csv',
         # path1='../logs/Digits/MtoU/MYMADA_right_weighted_sigmoid_train_split.csv',
-        path1='../logs/Office31/AtoW/MADA.csv',
-        path2='../logs/Office31/AtoW/My.csv',
+        path1='../logs/Digits/MtoU/My_withdetach.csv',
+        path2='../logs/Digits/MtoU/My_nodetach.csv',
         # path2='../logs/Digits/MtoU/MADA.csv'
     )
 

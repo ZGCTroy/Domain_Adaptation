@@ -219,6 +219,7 @@ class Solver():
             self.n_classes = 10
             self.task = self.source_domain[0] + 'to' + self.target_domain[0]
             if self.task == 'MtoU':
+                print(os.path.join(data_dir,'MNIST'))
                 self.source_data = load_MNIST(root_dir=os.path.join(data_dir,'MNIST'))
                 self.target_data = load_USPS(root_dir=os.path.join(data_dir,'USPS'))
 
