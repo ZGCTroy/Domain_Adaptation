@@ -14,7 +14,7 @@ class BaselineSolver(Solver):
     def __init__(self, dataset_type, source_domain, target_domain, cuda, pretrained=False,
                  batch_size=32,
                  num_epochs=99999, max_iter_num=99999999, test_interval=100, test_mode=False, num_workers=2, lr=0.001,
-                 gamma=10, optimizer_type='SGD'):
+                 gamma=10, optimizer_type='SGD',data_root_dir='./data'):
         super(BaselineSolver, self).__init__(
             dataset_type=dataset_type,
             source_domain=source_domain,
@@ -29,7 +29,8 @@ class BaselineSolver(Solver):
             num_workers=num_workers,
             lr=lr,
             gamma=gamma,
-            optimizer_type=optimizer_type
+            optimizer_type=optimizer_type,
+            data_root_dir = data_root_dir
         )
         self.model_name = 'Baseline'
 

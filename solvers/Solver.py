@@ -13,7 +13,8 @@ class Solver():
     def __init__(self, dataset_type, source_domain, target_domain, cuda='cuda:0',
                  pretrained=False, batch_size=32,
                  num_epochs=999999, max_iter_num=999999, test_interval=500, test_mode=False, num_workers=2,
-                 clean_log=False, lr=0.001, gamma=10, optimizer_type='SGD'):
+                 clean_log=False, lr=0.001, gamma=10, optimizer_type='SGD',data_root_dir='./data'):
+        self.data_root_dir = data_root_dir
         self.dataset_type = dataset_type
         self.source_domain = source_domain
         self.target_domain = target_domain
@@ -212,26 +213,29 @@ class Solver():
 
     def load_dataset(self):
         # TODO 1 : Load Dataset
+        data_dir = self.data_root_dir
         if self.dataset_type == 'Digits':
+            data_dir = os.path.join(data_dir,'Digits')
             self.n_classes = 10
             self.task = self.source_domain[0] + 'to' + self.target_domain[0]
             if self.task == 'MtoU':
-                self.source_data = load_MNIST(root_dir='./data/Digits/MNIST')
-                self.target_data = load_USPS(root_dir='./data/Digits/USPS')
+                self.source_data = load_MNIST(root_dir=os.path.join(data_dir,'MNIST'))
+                self.target_data = load_USPS(root_dir=os.path.join(data_dir,'USPS'))
 
             if self.task == 'UtoM':
-                self.source_data = load_USPS(root_dir='./data/Digits/USPS')
-                self.target_data = load_MNIST(root_dir='./data/Digits/MNIST')
+                self.source_data = load_USPS(root_dir=os.path.join(data_dir,'USPS'))
+                self.target_data = load_MNIST(root_dir=os.path.join(data_dir,'MNIST'))
 
             if self.task == 'StoM':
-                self.source_data = load_SVHN(root_dir='./data/Digits/SVHN')
-                self.target_data = load_MNIST(root_dir='./data/Digits/MNIST', resize_size=32, Gray_to_RGB=True)
+                self.source_data = load_SVHN(root_dir=os.path.join(data_dir,'SVHN'))
+                self.target_data = load_MNIST(root_dir=os.path.join(data_dir,'MNIST'), resize_size=32, Gray_to_RGB=True)
 
         if self.dataset_type == 'Office31':
+            data_dir = os.path.join(data_dir, 'Office31')
             self.n_classes = 31
             self.task = self.source_domain[0] + 'to' + self.target_domain[0]
-            self.source_data = load_Office('./data/Office31', domain=self.source_domain)
-            self.target_data = load_Office('./data/Office31', domain=self.target_domain)
+            self.source_data = load_Office(data_dir, domain=self.source_domain)
+            self.target_data = load_Office(data_dir, domain=self.target_domain)
 
         if self.dataset_type == 'OfficeHome':
             self.n_classes = 65

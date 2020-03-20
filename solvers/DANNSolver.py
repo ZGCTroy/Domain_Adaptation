@@ -17,7 +17,7 @@ class DANNSolver(Solver):
                  pretrained=False,
                  batch_size=32,
                  num_epochs=9999, max_iter_num=9999999, test_interval=500, test_mode=False, num_workers=2,
-                 clean_log=False, lr=0.001, gamma=10, optimizer_type='SGD', use_augment = False):
+                 clean_log=False, lr=0.001, gamma=10, optimizer_type='SGD', use_augment = False, data_root_dir='./data'):
         super(DANNSolver, self).__init__(
             dataset_type=dataset_type,
             source_domain=source_domain,
@@ -33,7 +33,8 @@ class DANNSolver(Solver):
             clean_log=clean_log,
             lr=lr,
             gamma=gamma,
-            optimizer_type=optimizer_type
+            optimizer_type=optimizer_type,
+            data_root_dir=data_root_dir
         )
         self.model_name = 'DANN'
         self.iter_num = 0

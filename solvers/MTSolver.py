@@ -38,7 +38,7 @@ class MTSolver(Solver):
                  batch_size=36,
                  num_epochs=9999, max_iter_num=9999999, test_interval=500, test_mode=False, num_workers=2,
                  clean_log=False, lr=0.001, gamma=10, loss_weight=3.0, optimizer_type='SGD', confidence_thresh=0.968,
-                 rampup_epoch=80, use_CT=False):
+                 rampup_epoch=80, use_CT=False, data_root_dir='./data'):
         super(MTSolver, self).__init__(
             dataset_type=dataset_type,
             source_domain=source_domain,
@@ -54,7 +54,8 @@ class MTSolver(Solver):
             clean_log=clean_log,
             lr=lr,
             gamma=gamma,
-            optimizer_type=optimizer_type
+            optimizer_type=optimizer_type,
+            data_root_dir=data_root_dir
         )
         self.model_name = 'MT'
         self.iter_num = 0

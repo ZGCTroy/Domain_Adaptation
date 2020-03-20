@@ -269,8 +269,8 @@ def main():
     single_compare(
         # path1='../logs/Digits/MtoU/MYMADA_adsigmoid_right_weighted_sigmoid_train_split.csv',
         # path1='../logs/Digits/MtoU/MYMADA_right_weighted_sigmoid_train_split.csv',
-        path1='../logs/Digits/UtoM/MCD.csv',
-        path2='../logs/Digits/UtoM/MYMADA_BCEweight_entropyTrue_lateraugment.csv',
+        path1='../logs/Office31/AtoW/MADA.csv',
+        path2='../logs/Office31/AtoW/My.csv',
         # path2='../logs/Digits/MtoU/MADA.csv'
     )
 

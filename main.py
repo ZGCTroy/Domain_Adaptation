@@ -22,6 +22,7 @@ parser.add_argument('--source', type=str, default='Webcam')
 parser.add_argument('--target', type=str, default='Dslr')
 parser.add_argument('--optimizer', type=str, default='SGD')
 parser.add_argument('--cuda', type=str, default='cuda:0')
+parser.add_argument('--data_root_dir', type=str, default='./data')
 
 parser.add_argument('--test_mode', action='store_true', default=False)
 parser.add_argument('--pretrained', action='store_true', default=False)
@@ -71,7 +72,8 @@ def main():
             lr=args.lr,
             gamma=args.gamma,
             optimizer_type=args.optimizer,
-            loss_weight=args.loss_weight
+            loss_weight=args.loss_weight,
+            data_root_dir = args.data_root_dir
         )
 
     if args.model == 'Baseline':
@@ -89,7 +91,8 @@ def main():
             num_workers=args.num_workers,
             lr=args.lr,
             gamma=args.gamma,
-            optimizer_type=args.optimizer
+            optimizer_type=args.optimizer,
+            data_root_dir=args.data_root_dir
         )
 
     if args.model == 'DANN':
@@ -108,7 +111,8 @@ def main():
             lr = args.lr,
             gamma=args.gamma,
             optimizer_type=args.optimizer,
-            use_augment=args.use_augment
+            use_augment=args.use_augment,
+            data_root_dir=args.data_root_dir
         )
 
     if args.model == 'MT':
@@ -127,7 +131,8 @@ def main():
             lr=args.lr,
             gamma=args.gamma,
             optimizer_type=args.optimizer,
-            use_CT=args.use_CT
+            use_CT=args.use_CT,
+            data_root_dir=args.data_root_dir
         )
 
     if args.model == 'MCD':
@@ -146,7 +151,8 @@ def main():
             lr=args.lr,
             gamma=args.gamma,
             optimizer_type=args.optimizer,
-            num_k=args.num_k
+            num_k=args.num_k,
+            data_root_dir=args.data_root_dir
         )
 
     if args.model == 'MCD2':
@@ -165,7 +171,8 @@ def main():
             lr=args.lr,
             gamma=args.gamma,
             optimizer_type=args.optimizer,
-            num_k=args.num_k
+            num_k=args.num_k,
+            data_root_dir=args.data_root_dir
         )
 
     if args.model == 'MADA':
@@ -184,7 +191,8 @@ def main():
             lr=args.lr,
             gamma=args.gamma,
             optimizer_type=args.optimizer,
-            loss_weight=args.loss_weight
+            loss_weight=args.loss_weight,
+            data_root_dir=args.data_root_dir
         )
 
     solver.solve()
