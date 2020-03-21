@@ -134,7 +134,7 @@ class MYSolver(Solver):
             source_class_loss = nn.CrossEntropyLoss()(source_class_outputs, source_labels)
             source_class_outputs = nn.Softmax(dim=1)(source_class_outputs)
 
-            source_weight = self.get_weight(source_class_outputs, h=False)
+            source_weight = self.get_weight(source_class_outputs, h=True)
             source_domain_loss = nn.BCELoss(reduction='none')(
                 source_domain_outputs.view(-1),
                 torch.zeros((batch_size * self.n_classes,),device=self.device)
@@ -155,7 +155,7 @@ class MYSolver(Solver):
             target_domain_outputs, target_class_outputs = self.model(target_inputs, alpha=alpha)
             target_class_outputs = nn.Softmax(dim=1)(target_class_outputs)
 
-            target_weight = self.get_weight(target_class_outputs, h=False)
+            target_weight = self.get_weight(target_class_outputs, h=True)
             target_domain_loss = nn.BCELoss(reduction='none')(
                 target_domain_outputs.view(-1),
                 torch.ones((batch_size * self.n_classes,),device=self.device)
