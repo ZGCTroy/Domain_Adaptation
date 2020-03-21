@@ -139,7 +139,7 @@ class MYSolver(Solver):
                 source_domain_outputs.view(-1),
                 torch.zeros((batch_size * self.n_classes,),device=self.device)
             )
-            source_domain_loss = torch.mean(source_domain_loss * source_weight.detach())
+            source_domain_loss = torch.mean(source_domain_loss * source_weight)
 
             source_loss = source_class_loss + self.loss_weight * source_domain_loss
             source_loss.backward(retain_graph=True)
@@ -160,7 +160,7 @@ class MYSolver(Solver):
                 target_domain_outputs.view(-1),
                 torch.ones((batch_size * self.n_classes,),device=self.device)
             )
-            target_domain_loss = torch.mean(target_domain_loss * target_weight.detach())
+            target_domain_loss = torch.mean(target_domain_loss * target_weight)
 
             target_loss = self.loss_weight * target_domain_loss
 
