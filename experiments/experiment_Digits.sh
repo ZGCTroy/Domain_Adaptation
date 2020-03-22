@@ -52,7 +52,18 @@ python3.6 ../main.py --model='MT' --dataset='Digits' --source='SVHN' --target='M
 python3.6 ../main.py --model='MCD' --dataset='Digits' --source='USPS' --target='MNIST' \
 --cuda='cuda:0' --num_workers=0 --epochs=300 --batch_size=256 --test_interval=1 --optimizer='Adam'
 
-python3.6 ../main.py --model='MCD' --dataset='Digits' --source='MNIST' --target='USPS' \
+python3 main.py --model='MCD' --dataset='Digits' --source='MNIST' --target='USPS' \
+--cuda='cuda:0' --num_workers=0 --epochs=300 --batch_size=256 --test_interval=1 --optimizer='Adam'
+
+python3.6 ../main.py --model='MCD' --dataset='Digits' --source='SVHN' --target='MNIST' \
+--cuda='cuda:2' --num_workers=0 --epochs=300 --batch_size=256 --test_interval=1 --optimizer='Adam'
+
+# MYMCD
+
+python3.6 ../main.py --model='MCD' --dataset='Digits' --source='USPS' --target='MNIST' \
+--cuda='cuda:0' --num_workers=0 --epochs=300 --batch_size=256 --test_interval=1 --optimizer='Adam'
+
+python3 main.py --model='MCD' --dataset='Digits' --source='MNIST' --target='USPS' \
 --cuda='cuda:0' --num_workers=0 --epochs=300 --batch_size=256 --test_interval=1 --optimizer='Adam'
 
 python3.6 ../main.py --model='MCD' --dataset='Digits' --source='SVHN' --target='MNIST' \

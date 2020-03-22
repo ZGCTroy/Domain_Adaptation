@@ -8,8 +8,9 @@ from solvers.BaselineSolver import BaselineSolver
 from solvers.DANNSolver import DANNSolver
 from solvers.MADASolver import MADASolver
 from solvers.MCDSolver import MCDSolver
+from solvers.MYMCDSolver import MYMCDSolver
 from solvers.MTSolver import MTSolver
-from solvers.MYSolver import MYSolver
+from solvers.MYMADASolver import MYMADASolver
 
 print(os.getcwd())
 os.chdir(os.getcwd())
@@ -56,8 +57,8 @@ def main():
 
     solver = None
 
-    if args.model == 'MY':
-        solver = MYSolver(
+    if args.model == 'MYMADA':
+        solver = MYMADASolver(
             dataset_type=args.dataset,
             source_domain=args.source,
             target_domain=args.target,
@@ -137,6 +138,26 @@ def main():
 
     if args.model == 'MCD':
         solver = MCDSolver(
+            dataset_type=args.dataset,
+            source_domain=args.source,
+            target_domain=args.target,
+            cuda=args.cuda,
+            pretrained=args.pretrained,
+            test_mode=args.test_mode,
+            batch_size=args.batch_size,
+            num_epochs=args.epochs,
+            test_interval=args.test_interval,
+            max_iter_num=args.iterations,
+            num_workers=args.num_workers,
+            lr=args.lr,
+            gamma=args.gamma,
+            optimizer_type=args.optimizer,
+            num_k=args.num_k,
+            data_root_dir=args.data_root_dir
+        )
+
+    if args.model == 'MYMCD':
+        solver = MYMCDSolver(
             dataset_type=args.dataset,
             source_domain=args.source,
             target_domain=args.target,

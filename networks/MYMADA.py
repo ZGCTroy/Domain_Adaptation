@@ -2,9 +2,9 @@ from networks.AdversarialNetwork import AdversarialNetwork
 from networks.Baseline import *
 
 
-class MY(nn.Module):
+class MYMADA(nn.Module):
     def __init__(self, n_classes, base_model, pretrained=True):
-        super(MY, self).__init__()
+        super(MYMADA, self).__init__()
 
         self.n_classes = n_classes
         self.pretrained = pretrained
@@ -46,3 +46,4 @@ class MY(nn.Module):
     def get_parameters(self):
         parameters = self.base_model.get_parameters() + self.domain_classifier.get_parameters()
         return parameters
+

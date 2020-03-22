@@ -6,19 +6,19 @@ import time
 import torch.nn as nn
 
 from data_helpers.data_helper import *
-from networks.MCD import MCD
+from networks.MYMCD import MYMCD
 from solvers.Solver import Solver
 import torch.nn.functional as F
 
 
-class MCDSolver(Solver):
+class MYMCDSolver(Solver):
 
     def __init__(self, dataset_type, source_domain, target_domain, cuda='cuda:0',
                  pretrained=False,
                  batch_size=36,
                  num_epochs=9999, max_iter_num=9999999, test_interval=500, test_mode=False, num_workers=2,
                  clean_log=False, lr=0.001, gamma=10, loss_weight=3.0, optimizer_type='SGD', num_k=4,data_root_dir='./data'):
-        super(MCDSolver, self).__init__(
+        super(MYMCDSolver, self).__init__(
             dataset_type=dataset_type,
             source_domain=source_domain,
             target_domain=target_domain,
@@ -36,7 +36,7 @@ class MCDSolver(Solver):
             optimizer_type=optimizer_type,
             data_root_dir=data_root_dir
         )
-        self.model_name = 'MCD'
+        self.model_name = 'MYMCD'
         self.iter_num = 0
         self.optimizer_generator = None
         self.optimizer_classifier1 = None
@@ -48,12 +48,12 @@ class MCDSolver(Solver):
     def set_model(self):
         if self.dataset_type == 'Digits':
             if self.task in ['MtoU', 'UtoM']:
-                self.model = MCD(n_classes=self.n_classes, base_model='DigitsMU')
+                self.model = MYMCD(n_classes=self.n_classes, base_model='DigitsMU')
             if self.task in ['StoM']:
-                self.model = MCD(n_classes=self.n_classes, base_model='DigitsStoM')
+                self.model = MYMCD(n_classes=self.n_classes, base_model='DigitsStoM')
 
         if self.dataset_type in ['Office31', 'OfficeHome']:
-            self.model = MCD(n_classes=self.n_classes, base_model='ResNet50')
+            self.model = MYMCD(n_classes=self.n_classes, base_model='ResNet50')
 
         if self.pretrained:
             self.load_model(path=self.models_checkpoints_dir + '/' + self.model_name + '_best_train.pt')
@@ -76,9 +76,9 @@ class MCDSolver(Solver):
             inputs = inputs.to(self.device)
             labels = labels.to(self.device)
 
-            outputs1, outputs2 = self.model(inputs)
+            outputs2 = self.model(inputs, outputs1=False, outputs2=True)
             # outputs = nn.Softmax(dim=1)(outputs1) + nn.Softmax(dim=1)(outputs2)
-            outputs = outputs1
+            outputs = outputs2
 
             _, preds = torch.max(outputs, 1)
             corrects += (preds == labels.data).sum().item()
@@ -185,47 +185,44 @@ class MCDSolver(Solver):
             self.update_optimizer()
 
             # TODO 1 : Step A
-
             self.reset_optimizer()
 
             source_inputs, source_labels = next(source_iter)
-
             source_inputs = source_inputs.to(self.device)
-
-            source_outputs1, source_outputs2 = self.model(source_inputs)
-
+            source_outputs = self.model(source_inputs,outputs1=True)
             source_labels = source_labels.to(self.device)
+            loss_source = nn.CrossEntropyLoss()(source_outputs, source_labels)
 
-            loss_source1 = nn.CrossEntropyLoss()(source_outputs1, source_labels)
-            loss_source2 = nn.CrossEntropyLoss()(source_outputs2, source_labels)
-            loss = loss_source1 + loss_source2
+            target_inputs = target_inputs.to(self.device)
+            target_outputs1, target_outputs2 = self.model(target_inputs, outputs1=True, outputs2=True)
+            target_soft_labels = torch.argmax(target_outputs1, 1).detach()
+            loss_target = nn.CrossEntropyLoss()(target_outputs2, target_soft_labels)
 
-            loss.backward()
+            loss = loss_source + loss_target
+
+            loss.backward(retain_graph=True)
             self.optimizer_generator.step()
             self.optimizer_classifier1.step()
             self.optimizer_classifier2.step()
             self.reset_optimizer()
 
             total_loss += loss.item() * source_labels.size()[0]
-            _, source_class_preds1 = torch.max(source_outputs1, 1)
-            _, source_class_preds2 = torch.max(source_outputs2, 1)
-            source_corrects += (source_class_preds1 == source_labels.data).sum().item()
-            source_corrects += (source_class_preds2 == source_labels.data).sum().item()
+            _, source_class_preds = torch.max(source_outputs, 1)
+            source_corrects += (source_class_preds == source_labels.data).sum().item()
             processed_source_num += source_labels.size(0)
 
             # TODO 2 : Step B
+            source_outputs = self.model(source_inputs, outputs1=True)
+            loss_source = nn.CrossEntropyLoss()(source_outputs, source_labels)
 
-            source_outputs1, source_outputs2 = self.model(source_inputs)
-            loss_source1 = nn.CrossEntropyLoss()(source_outputs1, source_labels)
-            loss_source2 = nn.CrossEntropyLoss()(source_outputs2, source_labels)
-            loss_source = loss_source1 + loss_source2
-
-            target_inputs = target_inputs.to(self.device)
-            target_outputs1, target_outputs2 = self.model(target_inputs)
+            target_outputs1, target_outputs2 = self.model(target_inputs, outputs1=True, outputs2=True)
+            target_soft_labels = torch.argmax(target_outputs1, 1).detach()
+            loss_target = nn.CrossEntropyLoss()(target_outputs2, target_soft_labels)
             loss_discrepancy = self.compute_discrepancy(target_outputs1, target_outputs2)
 
-            loss = loss_source - loss_discrepancy
-            loss.backward()
+            loss = loss_source + loss_target -loss_discrepancy
+
+            loss.backward(retain_graph=True)
             self.optimizer_classifier1.step()
             self.optimizer_classifier2.step()
             self.reset_optimizer()
@@ -233,7 +230,7 @@ class MCDSolver(Solver):
             # TODO 3 : Step C
 
             for i in range(self.num_k):
-                target_outputs1, target_outputs2 = self.model(target_inputs)
+                target_outputs1, target_outputs2 = self.model(target_inputs, outputs1=True, outputs2=True)
                 loss_discrepancy = self.compute_discrepancy(target_outputs1, target_outputs2)
 
                 loss_discrepancy.backward()
