@@ -1,0 +1,5 @@
+time,iter,epoch,source,target,model,optimizer,batch_size,lr,train_acc,val_acc,test_acc,train_loss,val_loss,test_loss
+2020-03-18 11:05:14,235,0,USPS,MNIST,MYMADA_BCEweight_entropyTrue_lateraugment,Adam,256,0.001,0.9747,0.9532,0.9664,0.1934,0.0000,0.0000
+2020-03-18 11:11:05,470,1,USPS,MNIST,MYMADA_BCEweight_entropyTrue_lateraugment,Adam,256,0.001,0.9954,0.9472,0.9712,0.0702,0.0000,0.0000
+2020-03-18 11:28:53,705,2,USPS,MNIST,MYMADA_BCEweight_entropyTrue_lateraugment,Adam,256,0.001,0.9954,0.9457,0.9610,0.0958,0.0000,0.0000
+2020-03-18 12:01:28,940,3,USPS,MNIST,MYMADA_BCEweight_entropyTrue_lateraugment,Adam,256,0.001,0.9963,0.9532,0.9782,0.1274,0.0000,0.0000

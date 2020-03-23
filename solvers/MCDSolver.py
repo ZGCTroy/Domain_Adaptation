@@ -80,6 +80,7 @@ class MCDSolver(Solver):
             # outputs = nn.Softmax(dim=1)(outputs1) + nn.Softmax(dim=1)(outputs2)
             outputs = outputs1
 
+
             _, preds = torch.max(outputs, 1)
             corrects += (preds == labels.data).sum().item()
 

@@ -1,0 +1,2 @@
+time,iter,epoch,source,target,model,optimizer,batch_size,lr,train_acc,val_acc,test_acc,train_loss,val_loss,test_loss
+2020-03-10 18:55:23,235,0,USPS,MNIST,MYMADA,Adam,256,0.001,0.9640,0.9671,0.8492,0.7056,0.0000,0.0000

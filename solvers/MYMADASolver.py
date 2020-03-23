@@ -37,7 +37,7 @@ class MYMADASolver(Solver):
             data_root_dir=data_root_dir
         )
 
-        self.model_name = 'MYMADA'
+        self.model_name = 'MYMADA_domain_distance'
         self.iter_num = 0
         self.class_weight = None
         self.loss_weight = loss_weight
@@ -134,12 +134,12 @@ class MYMADASolver(Solver):
             source_class_loss = nn.CrossEntropyLoss()(source_class_outputs, source_labels)
             source_class_outputs = nn.Softmax(dim=1)(source_class_outputs)
 
-            source_weight = self.get_weight(source_class_outputs, h=True)
+            source_weight = self.get_weight(source_class_outputs, h=False)
             source_domain_loss = nn.BCELoss(reduction='none')(
                 source_domain_outputs.view(-1),
                 torch.zeros((batch_size * self.n_classes,),device=self.device)
             )
-            source_domain_loss = torch.mean(source_domain_loss * source_weight)
+            source_domain_loss = torch.mean(source_domain_loss * source_weight.detach())
 
             source_loss = source_class_loss + self.loss_weight * source_domain_loss
             source_loss.backward(retain_graph=True)
@@ -155,12 +155,12 @@ class MYMADASolver(Solver):
             target_domain_outputs, target_class_outputs = self.model(target_inputs, alpha=alpha)
             target_class_outputs = nn.Softmax(dim=1)(target_class_outputs)
 
-            target_weight = self.get_weight(target_class_outputs, h=True)
+            target_weight = self.get_weight(target_class_outputs, h=False)
             target_domain_loss = nn.BCELoss(reduction='none')(
                 target_domain_outputs.view(-1),
                 torch.ones((batch_size * self.n_classes,),device=self.device)
             )
-            target_domain_loss = torch.mean(target_domain_loss * target_weight)
+            target_domain_loss = torch.mean(target_domain_loss * target_weight.detach())
 
             target_loss = self.loss_weight * target_domain_loss
 
@@ -169,17 +169,16 @@ class MYMADASolver(Solver):
             self.optimizer.zero_grad()
 
             # TODO 3 : Augment LOSS
-            # augment_target_inputs = augment_target_inputs.to(self.device)
-            # augment_target_domain_outputs, augment_target_class_outputs = self.model(augment_target_inputs, alpha=alpha)
-            #
-            # augment_target_class_outputs = nn.Softmax(dim=1)(augment_target_class_outputs)
-            # augment_loss = self.compute_aug_loss(target_class_outputs, augment_target_class_outputs)
-            # augment_loss.backward()
-            # self.optimizer.step()
+            augment_target_inputs = augment_target_inputs.to(self.device)
+            augment_target_domain_outputs, augment_target_class_outputs = self.model(augment_target_inputs, alpha=-alpha)
+
+            augment_target_class_outputs = nn.Softmax(dim=1)(augment_target_class_outputs)
+            augment_loss = self.compute_aug_loss(target_domain_outputs, augment_target_domain_outputs)
+            augment_loss.backward()
+            self.optimizer.step()
             augment_loss = 0
 
             loss= source_loss + target_loss + augment_loss
-
 
             # TODO 5 : other parameters
             total_loss += loss.item() * source_labels.size()[0]

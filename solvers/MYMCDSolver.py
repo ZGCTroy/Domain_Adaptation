@@ -220,14 +220,14 @@ class MYMCDSolver(Solver):
             loss_target = nn.CrossEntropyLoss()(target_outputs2, target_soft_labels)
             loss_discrepancy = self.compute_discrepancy(target_outputs1, target_outputs2)
 
-            loss = loss_source + loss_target -loss_discrepancy
+            loss = loss_source + loss_target - loss_discrepancy
 
             loss.backward(retain_graph=True)
             self.optimizer_classifier1.step()
             self.optimizer_classifier2.step()
             self.reset_optimizer()
 
-            # TODO 3 : Step C
+            # # TODO 3 : Step C
 
             for i in range(self.num_k):
                 target_outputs1, target_outputs2 = self.model(target_inputs, outputs1=True, outputs2=True)
