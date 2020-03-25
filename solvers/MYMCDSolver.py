@@ -298,7 +298,7 @@ class MYMCDSolver(Solver):
             self.reset_optimizer()
 
             target_class_outputs1, target_class_outputs2 = self.model(
-                target_inputs,
+                target_inputs.to(self.device),
                 outputs1=True,
                 outputs2=True
             )
@@ -317,7 +317,7 @@ class MYMCDSolver(Solver):
             # TODO 3 : Distance Loss
             for i in range(self.num_k):
                 target_class_outputs1, target_class_outputs2 = self.model(
-                    target_inputs,
+                    target_inputs.to(self.device),
                     outputs1=True,
                     outputs2=True
                 )
