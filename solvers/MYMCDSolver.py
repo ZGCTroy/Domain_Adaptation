@@ -335,7 +335,7 @@ class MYMCDSolver(Solver):
             # TODO 5 : other parameters
             total_loss += loss.item() * source_labels.size()[0]
             _, source_class_preds = torch.max(source_class_outputs, 1)
-            source_corrects += (source_class_preds == source_labels).sum().item()
+            source_corrects += (source_class_preds == source_labels).sum()
             total_source_num += source_labels.size()[0]
             processed_target_num += target_labels.size()[0]
             self.iter_num += 1
