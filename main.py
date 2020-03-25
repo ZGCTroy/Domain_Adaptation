@@ -153,7 +153,8 @@ def main():
             gamma=args.gamma,
             optimizer_type=args.optimizer,
             num_k=args.num_k,
-            data_root_dir=args.data_root_dir
+            data_root_dir=args.data_root_dir,
+            loss_weight=args.loss_weight
         )
 
     if args.model == 'MYMCD':
@@ -173,7 +174,8 @@ def main():
             gamma=args.gamma,
             optimizer_type=args.optimizer,
             num_k=args.num_k,
-            data_root_dir=args.data_root_dir
+            data_root_dir=args.data_root_dir,
+            loss_weight=args.loss_weight
         )
 
     if args.model == 'MCD2':

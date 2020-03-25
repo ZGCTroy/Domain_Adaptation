@@ -6,6 +6,8 @@ import pandas as pd
 from torch.utils.data import DataLoader
 
 from data_helpers.data_helper import *
+from tensorboardX import SummaryWriter
+import torchvision.utils as vutils
 
 
 
@@ -24,6 +26,7 @@ class Solver():
         self.num_workers = num_workers
         self.test_interval = test_interval
         self.max_iter_num = max_iter_num
+        self.epoch = 0
         self.test_mode = test_mode
         self.cuda = cuda
         self.device = torch.device(self.cuda if torch.cuda.is_available() else "cpu")
@@ -44,6 +47,7 @@ class Solver():
                 'test': None
             }
         }
+        self.local_time = str(time.asctime( time.localtime(time.time() )))
 
         self.log = {
             'time': [],
@@ -72,6 +76,7 @@ class Solver():
         self.models_checkpoints_dir = ''
         self.iter_num = 0
         self.optimizer_type = optimizer_type
+        self.writer = None
 
     def test(self, data_loader):
         raise NotImplementedError
@@ -87,6 +92,7 @@ class Solver():
 
         best_val_loss, best_val_acc = self.test(
             data_loader=self.data_loader['source']['test'],
+            projection=False
         )
 
         print('Initial Train Loss: {:.4f} Acc: {:.4f}\n'.format(best_val_loss, best_val_acc))
@@ -94,6 +100,7 @@ class Solver():
 
         best_test_loss, best_test_acc = self.test(
             data_loader=self.data_loader['target']['test'],
+            projection=True
         )
         print('Initial Test Loss: {:.4f} Acc: {:.4f}\n'.format(best_test_loss, best_test_acc))
         print()
@@ -103,16 +110,22 @@ class Solver():
             print('\nEpoch {}/{}'.format(epoch, num_epochs - 1), '\n', '-' * 10)
             print('iteration : {}\n'.format(self.iter_num))
 
+
             # TODO 1 : Train
             train_loss, train_acc = self.train_one_epoch()
+            self.writer.add_scalar('acc/train acc', train_acc, epoch)
 
             print('Train Loss: {:.4f} Acc: {:.4f}\n'.format(train_loss, train_acc))
+
+            for i, (name, param) in enumerate(self.model.named_parameters()):
+                if 'bn' not in name:
+                    self.writer.add_histogram(name, param, self.epoch)
 
             # TODO 2 : Validation
             val_acc = val_loss = 0
             if self.dataset_type == 'Digits':
 
-                val_loss, val_acc = self.test(data_loader=self.data_loader['source']['test'], )
+                val_loss, val_acc = self.test(data_loader=self.data_loader['source']['test'],projection=False)
                 print('Val Loss: {:.4f} Acc: {:.4f}\n'.format(val_loss, val_acc))
 
                 if val_acc >= best_val_acc:
@@ -123,7 +136,7 @@ class Solver():
             # TODO 3 : Test
             if self.iter_num - log_iter >= self.test_interval:
                 log_iter = self.iter_num
-                test_loss, test_acc = self.test(data_loader=self.data_loader['target']['test'])
+                test_loss, test_acc = self.test(data_loader=self.data_loader['target']['test'],projection=True)
 
                 print('Test Loss: {:.4f} Acc: {:.4f}\n'.format(test_loss, test_acc))
 
@@ -132,6 +145,8 @@ class Solver():
                     best_test_loss = test_loss
                     self.save_model(path=self.models_checkpoints_dir + '/' + self.model_name + '_best_test.pt')
 
+                self.writer.add_scalar('acc/test acc', test_acc, epoch)
+                self.writer.add_scalars('acc/acc',{'train acc': train_acc,'test acc':test_acc}, epoch)
                 self.add_log(epoch, train_acc, val_acc, test_acc, train_loss, val_loss, test_loss)
                 self.save_log()
 
@@ -252,6 +267,7 @@ class Solver():
                                                                                len(self.target_data['test'])))
 
     def solve(self):
+        self.writer = SummaryWriter(logdir='./tensorboardX/'+self.model_name+'/'+ self.local_time)
         # TODO 1 : load dataset
         self.load_dataset()
 
@@ -272,6 +288,11 @@ class Solver():
 
         self.logs_dir = './logs/' + self.dataset_type + '/' + self.task
 
+        # from torch.autograd import Variable
+        #
+        # dummy_input = Variable(torch.rand(1, 1, 28, 28))
+        # self.writer.add_graph(self.model, (dummy_input,), verbose=True)
+
         if self.test_mode:
             self.test(
                 data_loader=torch.utils.data.DataLoader(
@@ -282,6 +303,8 @@ class Solver():
             )
         else:
             self.train(num_epochs=self.num_epochs)
+
+        self.writer.close()
 
     def add_log(self, epoch, train_acc, val_acc, test_acc, train_loss, val_loss, test_loss):
         self.log['time'].append(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))

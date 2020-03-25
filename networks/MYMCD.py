@@ -1,5 +1,5 @@
 from networks.Baseline import *
-
+from networks.AdversarialNetwork import AdversarialNetwork
 
 class MYMCD(nn.Module):
     def __init__(self, n_classes, base_model, pretrained=True):
@@ -62,19 +62,66 @@ class MYMCD(nn.Module):
             self.lr_mult = 1
             self.decay_mult = 1
 
-    def forward(self, x, outputs1=False, outputs2=False):
+        self.domain_classifier = AdversarialNetwork(
+            in_features_size=self.in_features_size,
+            lr_mult=self.lr_mult,
+            decay_mult=self.decay_mult,
+            out_features_size=n_classes,
+            sigmoid=True
+        )
+
+    def forward(self, x, outputs1=False, outputs2=False, domain=False, alpha=1.0, get_features=False):
+
         features = self.Generator(x, get_features=True, get_class_outputs=False)
 
-        if outputs1 and outputs2:
-            outputs1 = self.Classifier1(features)
-            outputs2 = self.Classifier2(features)
-            return outputs1, outputs2
-        if outputs1:
-            outputs1 = self.Classifier1(features)
-            return outputs1
-        if outputs2:
-            outputs2 = self.Classifier2(features)
-            return outputs2
+        if not get_features:
+            if outputs1 and outputs2:
+                outputs1 = self.Classifier1(features)
+                outputs2 = self.Classifier2(features)
+                if domain:
+                    domain_outputs = self.domain_classifier(features, alpha=alpha)
+                    return domain_outputs, outputs1, outputs2
+                else:
+                    return outputs1, outputs2
+            if outputs1:
+                outputs1 = self.Classifier1(features)
+                if domain:
+                    domain_outputs = self.domain_classifier(features, alpha=alpha)
+                    return domain_outputs, outputs1
+                else:
+                    return outputs1
+            if outputs2:
+                outputs2 = self.Classifier2(features)
+                if domain:
+                    domain_outputs = self.domain_classifier(features, alpha=alpha)
+                    return domain_outputs, outputs2
+                else:
+                    return outputs2
+        else:
+            if outputs1 and outputs2:
+                outputs1 = self.Classifier1(features)
+                outputs2 = self.Classifier2(features)
+                if domain:
+                    domain_outputs = self.domain_classifier(features, alpha=alpha)
+                    return features, domain_outputs, outputs1, outputs2
+                else:
+                    return features, outputs1, outputs2
+            if outputs1:
+                outputs1 = self.Classifier1(features)
+                if domain:
+                    domain_outputs = self.domain_classifier(features, alpha=alpha)
+                    return features, domain_outputs, outputs1
+                else:
+                    return features, outputs1
+            if outputs2:
+                outputs2 = self.Classifier2(features)
+                if domain:
+                    domain_outputs = self.domain_classifier(features, alpha=alpha)
+                    return features, domain_outputs, outputs2
+                else:
+                    return features, outputs2
+
+        return features
 
     def get_generator_parameters(self):
         if self.base_model_name == 'ResNet50':
@@ -100,3 +147,10 @@ class MYMCD(nn.Module):
             {'params': self.Classifier2.parameters(), 'lr_mult': self.lr_mult, 'decay_mult': self.decay_mult},
         ]
         return parameters
+
+    def get_domain_classifier_parameters(self):
+        parameters = [
+            {'params': self.domain_classifier.parameters(), 'lr_mult': self.lr_mult, 'decay_mult': self.decay_mult},
+        ]
+        return parameters
+
