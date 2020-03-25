@@ -244,16 +244,19 @@ class MYMCDSolver(Solver):
             source_inputs, source_labels = next(source_iter)
             batch_size = source_inputs.size()[0]
 
+            source_inputs = source_inputs.to(self.device)
             source_domain_outputs, source_class_outputs = self.model(
-                source_inputs.to(self.device),
+                source_inputs,
                 outputs1=True,
                 outputs2=False,
                 domain=True,
                 alpha=alpha
             )
-            source_class_loss = nn.CrossEntropyLoss()(source_class_outputs, source_labels.to(self.device))
+            source_labels = source_labels.to(self.device)
+            source_class_loss = nn.CrossEntropyLoss()(source_class_outputs, source_labels)
 
             source_class_outputs = nn.Softmax(dim=1)(source_class_outputs)
+
             source_weight = self.get_weight(source_class_outputs.detach(), h=True).detach()
             source_domain_loss = nn.BCELoss(weight= source_weight)(
                 source_domain_outputs.view(-1),
@@ -268,11 +271,15 @@ class MYMCDSolver(Solver):
             self.optimizer_domain_classifier.step()
             self.reset_optimizer()
 
+            _, source_class_preds = torch.max(source_class_outputs, 1)
+            source_corrects += (source_class_preds == source_labels.data).sum().item()
+
             # TODO 2 : Target Train
             batch_size = target_inputs.size()[0]
 
+            target_inputs = target_inputs.to(self.device)
             target_domain_outputs, target_class_outputs1, target_class_outputs2 = self.model(
-                target_inputs.to(self.device),
+                target_inputs,
                 outputs1=True,
                 outputs2=True,
                 domain=True,
@@ -298,7 +305,7 @@ class MYMCDSolver(Solver):
             self.reset_optimizer()
 
             target_class_outputs1, target_class_outputs2 = self.model(
-                target_inputs.to(self.device),
+                target_inputs,
                 outputs1=True,
                 outputs2=True
             )
@@ -317,7 +324,7 @@ class MYMCDSolver(Solver):
             # TODO 3 : Distance Loss
             for i in range(self.num_k):
                 target_class_outputs1, target_class_outputs2 = self.model(
-                    target_inputs.to(self.device),
+                    target_inputs,
                     outputs1=True,
                     outputs2=True
                 )
@@ -334,8 +341,7 @@ class MYMCDSolver(Solver):
             loss = source_loss + target_loss
             # TODO 5 : other parameters
             total_loss += loss.item() * source_labels.size()[0]
-            _, source_class_preds = torch.max(source_class_outputs, 1)
-            source_corrects += (source_class_preds == source_labels).sum()
+
             total_source_num += source_labels.size()[0]
             processed_target_num += target_labels.size()[0]
             self.iter_num += 1
@@ -357,9 +363,6 @@ class MYMCDSolver(Solver):
 
             self.writer.add_scalar('loss/distance loss', loss_discrepancy, self.iter_num)
             self.writer.add_scalar('alpha', alpha, self.iter_num)
-
-
-
 
 
         acc = source_corrects / total_source_num
