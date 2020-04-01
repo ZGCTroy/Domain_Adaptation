@@ -28,11 +28,11 @@ def get_small_classifier(in_features_size, n_classes):
 
 def get_large_classifier(in_features_size, n_classes):
     classifier = nn.Sequential(
-        nn.Dropout(0.5),
+        nn.Dropout(0.25),
         nn.Linear(in_features_size, 1024),
         nn.BatchNorm1d(1024),
         nn.ReLU(),
-        nn.Dropout(0.5),
+        nn.Dropout(0.25),
         nn.Linear(1024, 1024),
         nn.BatchNorm1d(1024),
         nn.ReLU(),
@@ -209,7 +209,7 @@ class ResNet50(nn.Module):
         self.features_output_size = bottleneck_dim
 
         if use_dropout:
-            self.dropout = nn.Dropout(0.5)
+            self.dropout = nn.Dropout(0.25)
 
         # Class Classifie
         self.classifier = nn.Sequential(

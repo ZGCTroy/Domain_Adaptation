@@ -63,7 +63,7 @@ class MADASolver(Solver):
 
         self.model = self.model.to(self.device)
 
-    def test(self, data_loader):
+    def test(self, data_loader, projection=False):
 
         model = self.model
         model.eval()
@@ -121,18 +121,10 @@ class MADASolver(Solver):
             # TODO 1 : Target Train
 
             target_inputs = target_inputs.to(self.device)
-
             target_domain_outputs, target_class_outputs = self.model(target_inputs, alpha=alpha)
-
-            # print(target_domain_outputs.size())
-            # print(target_labels.size())
-
             target_domain_labels = torch.ones((target_labels.size()[0] * self.n_classes, 1), device=self.device)
-            # print(target_domain_outputs.view(-1).size())
-            # print(target_domain_outputs.view(-1))
             target_domain_loss = nn.BCELoss()(target_domain_outputs.view(-1), target_domain_labels.view(-1))
-            # print()
-            # print()
+
             # TODO 2 : Source Train
 
             source_iter = iter(self.data_loader['source']['train'])
@@ -144,13 +136,14 @@ class MADASolver(Solver):
             source_labels = source_labels.to(self.device)
             source_class_loss = class_criterion(source_class_outputs, source_labels)
 
-            source_domain_labels = torch.zeros((source_labels.size()[0] * self.n_classes, 1), device=self.device)
-
-            source_domain_loss = nn.BCELoss()(source_domain_outputs.view(-1), source_domain_labels.view(-1))
+            source_domain_loss = nn.BCELoss()(
+                source_domain_outputs.view(-1),
+                torch.zeros((source_labels.size()[0] * self.n_classes, 1), device=self.device).view(-1)
+            )
 
             # TODO 3 : LOSS
 
-            loss = self.loss_weight * self.n_classes * 0.5 * (
+            loss = self.loss_weight * (
                     target_domain_loss + source_domain_loss) + source_class_loss
 
             loss.backward()
@@ -164,6 +157,18 @@ class MADASolver(Solver):
             total_source_num += source_labels.size()[0]
             processed_target_num += target_labels.size()[0]
             self.iter_num += 1
+
+            self.writer.add_scalar('loss/class loss/source class loss', source_class_loss, self.iter_num)
+            self.writer.add_scalar('loss/domain loss/source domain loss', source_domain_loss, self.iter_num)
+            self.writer.add_scalar('loss/domain loss/target domain loss', target_domain_loss, self.iter_num)
+            self.writer.add_scalars('loss/domain loss/group domain loss', {
+                'source domain loss': source_domain_loss,
+                'target domain loss': target_domain_loss,
+            }, self.iter_num
+            )
+
+            self.writer.add_scalar('parameters/alpha', alpha, self.iter_num)
+            self.writer.add_scalar('parameters/loss weight', self.loss_weight, self.iter_num)
 
         acc = source_corrects / total_source_num
         average_loss = total_loss / total_source_num

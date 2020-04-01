@@ -37,7 +37,7 @@ class MYMADASolver(Solver):
             data_root_dir=data_root_dir
         )
 
-        self.model_name = 'MYMADA_domain_distance'
+        self.model_name = 'MYMADA'
         self.iter_num = 0
         self.class_weight = None
         self.loss_weight = loss_weight
@@ -68,7 +68,7 @@ class MYMADASolver(Solver):
 
         self.model = self.model.to(self.device)
 
-    def test(self, data_loader):
+    def test(self, data_loader, projection=False):
         model = self.model
         model.eval()
 
@@ -122,12 +122,13 @@ class MYMADASolver(Solver):
             self.optimizer.zero_grad()
 
             alpha = self.get_alpha()
+            self.rampup_value = alpha
 
             # TODO 1 : Source Train
             source_iter = iter(self.data_loader['source']['train'])
             source_inputs, source_labels = next(source_iter)
-            source_inputs = source_inputs.to(self.device)
             batch_size = source_inputs.size()[0]
+            source_inputs = source_inputs.to(self.device)
 
             source_domain_outputs, source_class_outputs = self.model(source_inputs, alpha=alpha)
             source_labels = source_labels.to(self.device)
@@ -135,11 +136,10 @@ class MYMADASolver(Solver):
             source_class_outputs = nn.Softmax(dim=1)(source_class_outputs)
 
             source_weight = self.get_weight(source_class_outputs, h=False)
-            source_domain_loss = nn.BCELoss(reduction='none')(
+            source_domain_loss = nn.BCELoss(weight=source_weight)(
                 source_domain_outputs.view(-1),
                 torch.zeros((batch_size * self.n_classes,),device=self.device)
             )
-            source_domain_loss = torch.mean(source_domain_loss * source_weight.detach())
 
             source_loss = source_class_loss + self.loss_weight * source_domain_loss
             source_loss.backward(retain_graph=True)
@@ -156,11 +156,10 @@ class MYMADASolver(Solver):
             target_class_outputs = nn.Softmax(dim=1)(target_class_outputs)
 
             target_weight = self.get_weight(target_class_outputs, h=False)
-            target_domain_loss = nn.BCELoss(reduction='none')(
+            target_domain_loss = nn.BCELoss(weight=target_weight)(
                 target_domain_outputs.view(-1),
                 torch.ones((batch_size * self.n_classes,),device=self.device)
             )
-            target_domain_loss = torch.mean(target_domain_loss * target_weight.detach())
 
             target_loss = self.loss_weight * target_domain_loss
 
@@ -173,10 +172,12 @@ class MYMADASolver(Solver):
             augment_target_domain_outputs, augment_target_class_outputs = self.model(augment_target_inputs, alpha=-alpha)
 
             augment_target_class_outputs = nn.Softmax(dim=1)(augment_target_class_outputs)
-            augment_loss = self.compute_aug_loss(target_domain_outputs, augment_target_domain_outputs)
+            augment_class_loss = self.compute_aug_loss(target_class_outputs, augment_target_class_outputs)
+            augment_loss =  self.rampup_value * augment_class_loss
+
             augment_loss.backward()
             self.optimizer.step()
-            augment_loss = 0
+            self.optimizer.zero_grad()
 
             loss= source_loss + target_loss + augment_loss
 
@@ -187,6 +188,22 @@ class MYMADASolver(Solver):
             total_source_num += source_labels.size()[0]
             processed_target_num += target_labels.size()[0]
             self.iter_num += 1
+
+            self.writer.add_scalar('loss/class loss/source class loss', source_class_loss, self.iter_num)
+            self.writer.add_scalar('loss/domain loss/source domain loss', source_domain_loss, self.iter_num)
+            self.writer.add_scalar('loss/domain loss/target domain loss', target_domain_loss, self.iter_num)
+            self.writer.add_scalars('loss/domain loss/group domain loss', {
+                'source domain loss': source_domain_loss,
+                'target domain loss': target_domain_loss,
+            }, self.iter_num
+            )
+
+            self.writer.add_scalar('loss/augment loss/augment class loss', augment_class_loss, self.iter_num)
+
+
+            self.writer.add_scalar('parameters/alpha', alpha, self.iter_num)
+            self.writer.add_scalar('parameters/ramup value', self.rampup_value, self.iter_num)
+            self.writer.add_scalar('parameters/loss weight', self.loss_weight, self.iter_num)
 
         acc = source_corrects / total_source_num
         average_loss = total_loss / total_source_num
@@ -213,7 +230,8 @@ class MYMADASolver(Solver):
             weight = x.view(-1) * entropy
         else:
             weight = x.view(-1)
-        return weight
+
+        return weight.detach() * self.n_classes
 
     def compute_aug_loss(self, stu_out, tea_out):
         # stu_out = F.softmax(stu_out, dim=1)
@@ -223,14 +241,7 @@ class MYMADASolver(Solver):
         aug_loss = d_aug_loss * d_aug_loss
         aug_loss = aug_loss.mean(dim=1)
 
-        if self.use_CT:
-            conf_tea = torch.max(tea_out, 1)[0]
-            unsup_mask = (conf_tea > self.confidence_thresh).float()
-            unsup_mask_rate = unsup_mask.sum() / len(unsup_mask)
-            unsup_loss = (aug_loss * unsup_mask).mean()
-            return unsup_loss, unsup_mask_rate
-        else:
-            return aug_loss.mean() * self.rampup_value
+        return aug_loss.mean()
 
     def augment(self, x, T=True, A=True):
         # tmp = torch.Tensor(x) + torch.randn_like(x) * 0.1
@@ -240,20 +251,20 @@ class MYMADASolver(Solver):
         theta[:, 0, 0] = theta[:, 1, 1] = 1.0
 
         if self.dataset_type in ['Office31', 'OfficeHome']:
-            # # hflip
-            # theta_hflip = np.random.binomial(1, 0.5, size=(N,)) * 2 - 1
-            # theta[:, 0, 0] = theta_hflip.astype(np.float32)
-            #
-            # # scale_u_range
-            # scl = np.exp(
-            #     np.random.uniform(
-            #         low=np.log(0.75),
-            #         high=np.log(1.33),
-            #         size=(N,)
-            #     )
-            # )
-            # theta[:, 0, 0] *= scl
-            # theta[:, 1, 1] *= scl
+            # hflip
+            theta_hflip = np.random.binomial(1, 0.5, size=(N,)) * 2 - 1
+            theta[:, 0, 0] = theta_hflip.astype(np.float32)
+
+            # scale_u_range
+            scl = np.exp(
+                np.random.uniform(
+                    low=np.log(0.75),
+                    high=np.log(1.33),
+                    size=(N,)
+                )
+            )
+            theta[:, 0, 0] *= scl
+            theta[:, 1, 1] *= scl
             if T:
                 theta[:, :, 2:] += np.random.uniform(low=-0.2, high=0.2, size=(N, 2, 1))
 
@@ -270,4 +281,4 @@ class MYMADASolver(Solver):
         grid = F.affine_grid(theta=torch.from_numpy(theta), size=x.size())
         new_x = F.grid_sample(input=x, grid=grid)
 
-        return new_x
+        return new_x.detach()

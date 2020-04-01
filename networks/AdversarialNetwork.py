@@ -30,10 +30,10 @@ class AdversarialNetwork(nn.Module):
         self.discriminator = nn.Sequential(
             nn.Linear(self.in_features_size, 1024),
             nn.ReLU(),
-            nn.Dropout(0.5),
+            nn.Dropout(0.25),
             nn.Linear(1024, 1024),
             nn.ReLU(),
-            nn.Dropout(0.5),
+            nn.Dropout(0.25),
             nn.Linear(1024, self.out_features_size),
         )
         if sigmoid:

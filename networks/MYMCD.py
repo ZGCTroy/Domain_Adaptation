@@ -70,6 +70,10 @@ class MYMCD(nn.Module):
             sigmoid=True
         )
 
+    def get_features(self, x):
+        features = self.Generator(x, get_features=True, get_class_outputs=False)
+        return features
+
     def forward(self, x, outputs1=False, outputs2=False, domain=False, alpha=1.0, get_features=False):
 
         features = self.Generator(x, get_features=True, get_class_outputs=False)

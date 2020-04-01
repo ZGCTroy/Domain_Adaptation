@@ -94,16 +94,14 @@ class MYMCDSolver(Solver):
                 # print('save image')
                 # print(features[0].size())
                 # self.writer.add_image('feature map', features[0], self.epoch)
-
-                self.writer.add_embedding(
-                    features,
-                    metadata=labels,
-                    label_img=inputs,
-                    global_step=self.epoch
-                )
-
-
-            first = False
+                #
+                # self.writer.add_embedding(
+                #     features,
+                #     metadata=labels,
+                #     label_img=inputs,
+                #     global_step=self.epoch
+                # )
+                first = False
 
         acc = corrects / processed_num
         print('\nData size = {} , corrects = {}'.format(processed_num, (corrects1 + corrects2) / 2))
@@ -237,33 +235,29 @@ class MYMCDSolver(Solver):
             self.update_optimizer()
             self.reset_optimizer()
 
-            torch.cuda.empty_cache()
-
             # TODO 1 : Source Train
             source_iter = iter(self.data_loader['source']['train'])
             source_inputs, source_labels = next(source_iter)
             batch_size = source_inputs.size()[0]
 
             source_inputs = source_inputs.to(self.device)
-            source_domain_outputs, source_class_outputs = self.model(
-                source_inputs,
-                outputs1=True,
-                outputs2=False,
-                domain=True,
-                alpha=alpha
-            )
+            source_labels = source_labels.to(self.device)
+
+            features = self.model.get_features(source_inputs)
+
             del source_inputs
 
-            source_labels = source_labels.to(self.device)
+            source_class_outputs = self.model.Classifier1(features)
             source_class_loss = nn.CrossEntropyLoss()(source_class_outputs, source_labels)
-            source_class_outputs = nn.Softmax(dim=1)(source_class_outputs)
-            source_weight = self.get_weight(source_class_outputs.detach(), h=True).detach()
 
+            source_class_outputs = nn.Softmax(dim=1)(source_class_outputs)
             _, source_class_preds = torch.max(source_class_outputs, 1)
             source_corrects += (source_class_preds == source_labels.data).sum().item()
+            source_weight = self.get_weight(source_class_outputs.detach(), h=True).detach()
 
-            del source_class_outputs, source_labels
+            del source_class_outputs
 
+            source_domain_outputs = self.model.domain_classifier(features, alpha=alpha)
             source_domain_loss = nn.BCELoss(weight= source_weight)(
                 source_domain_outputs.view(-1),
                 torch.zeros((batch_size * self.n_classes,), device=self.device)
@@ -277,32 +271,33 @@ class MYMCDSolver(Solver):
             self.optimizer_domain_classifier.step()
             self.reset_optimizer()
 
-            del source_
-
+            torch.cuda.empty_cache()
 
             # TODO 2 : Target Train
             batch_size = target_inputs.size()[0]
+            target_inputs = target_inputs.to(device=self.device)
 
-            target_domain_outputs, target_class_outputs1, target_class_outputs2 = self.model(
-                target_inputs.to(self.device),
-                outputs1=True,
-                outputs2=True,
-                domain=True,
-                alpha=alpha
-            )
+            features = self.model.get_features(target_inputs)
 
+            target_class_outputs1 = self.model.Classifier1(features)
             target_soft_labels = torch.argmax(target_class_outputs1.detach(), 1).detach()
-            target_class_loss = nn.CrossEntropyLoss()(target_class_outputs2, target_soft_labels)
+            del target_class_outputs1
 
-            target_class_outputs = nn.Softmax(dim=1)(target_class_outputs2)
-            target_weight = self.get_weight(target_class_outputs.detach(), h=True).detach()
+            target_class_outputs2 = self.model.Classifier2(features)
+            target_class_loss = nn.CrossEntropyLoss()(target_class_outputs2, target_soft_labels)
+            target_class_outputs2 = nn.Softmax(dim=1)(target_class_outputs2)
+            target_weight = self.get_weight(target_class_outputs2.detach(), h=True).detach()
+            del target_class_outputs2
+
+            target_domain_outputs = self.model.domain_classifier(features, alpha=alpha)
             target_domain_loss = nn.BCELoss(weight=target_weight)(
                 target_domain_outputs.view(-1),
                 torch.ones((batch_size * self.n_classes,), device=self.device)
             )
+            del target_domain_outputs
+            torch.cuda.empty_cache()
 
             target_loss = target_class_loss + self.loss_weight * target_domain_loss
-
             target_loss.backward(retain_graph=True)
             self.optimizer_classifier2.step()
             self.optimizer_generator.step()
@@ -310,9 +305,14 @@ class MYMCDSolver(Solver):
             self.reset_optimizer()
 
             target_class_outputs1, target_class_outputs2 = self.model(
-                target_inputs.to(self.device),
+                target_inputs,
                 outputs1=True,
                 outputs2=True
+            )
+
+            loss_discrepancy = self.compute_discrepancy(
+                target_class_outputs1,
+                target_class_outputs2
             )
 
             loss = - loss_discrepancy
@@ -321,10 +321,12 @@ class MYMCDSolver(Solver):
             self.optimizer_classifier2.step()
             self.reset_optimizer()
 
+            torch.cuda.empty_cache()
+
             # TODO 3 : Distance Loss
             for i in range(self.num_k):
                 target_class_outputs1, target_class_outputs2 = self.model(
-                    target_inputs.to(self.device),
+                    target_inputs,
                     outputs1=True,
                     outputs2=True
                 )
@@ -332,6 +334,9 @@ class MYMCDSolver(Solver):
                     target_class_outputs1,
                     target_class_outputs2
                 )
+
+                del target_class_outputs1, target_class_outputs2
+                torch.cuda.empty_cache()
 
                 loss = loss_discrepancy
                 loss.backward(retain_graph=True)
@@ -362,7 +367,9 @@ class MYMCDSolver(Solver):
                                     )
 
             self.writer.add_scalar('loss/distance loss', loss_discrepancy, self.iter_num)
-            self.writer.add_scalar('alpha', alpha, self.iter_num)
+
+            self.writer.add_scalar('parameters/alpha', alpha, self.iter_num)
+            self.writer.add_scalar('parameters/loss weight', self.loss_weight, self.iter_num)
 
 
         acc = source_corrects / total_source_num
