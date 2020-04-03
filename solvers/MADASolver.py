@@ -105,8 +105,6 @@ class MADASolver(Solver):
         processed_target_num = 0
         total_source_num = 0
 
-        class_criterion = nn.CrossEntropyLoss()
-
         alpha = 0
         for target_inputs, target_labels in self.data_loader['target']['train']:
             sys.stdout.write('\r{}/{}'.format(processed_target_num, total_target_num))
@@ -134,7 +132,10 @@ class MADASolver(Solver):
             source_domain_outputs, source_class_outputs = self.model(source_inputs, alpha=alpha)
 
             source_labels = source_labels.to(self.device)
-            source_class_loss = class_criterion(source_class_outputs, source_labels)
+            source_class_loss = nn.CrossEntropyLoss()(
+                source_class_outputs,
+                source_labels
+            )
 
             source_domain_loss = nn.BCELoss()(
                 source_domain_outputs.view(-1),

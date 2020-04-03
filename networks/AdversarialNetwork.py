@@ -39,7 +39,7 @@ class AdversarialNetwork(nn.Module):
         if sigmoid:
             self.discriminator.add_module('sigmoid',nn.Sigmoid())
 
-        self.discriminator.apply(init_weights)
+        # self.discriminator.apply(init_weights)
 
     def forward(self, x, alpha):
         x = ReverseLayerF.apply(x, alpha)

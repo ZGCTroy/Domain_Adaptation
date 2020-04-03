@@ -10,7 +10,7 @@ class MYMADA(nn.Module):
         self.pretrained = pretrained
 
         if base_model == 'ResNet50':
-            self.base_model = ResNet50(n_classes=n_classes, pretrained=pretrained, bottleneck_dim=256, use_dropout=True)
+            self.base_model = ResNet50(n_classes=n_classes, pretrained=pretrained, bottleneck_dim=256, use_dropout=False)
             self.lr_mult = 10
             self.decay_mult = 2
 

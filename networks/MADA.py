@@ -55,6 +55,8 @@ class MADA(nn.Module):
             else:
                 domain_outputs = torch.cat([domain_outputs, ad(weighted_features, alpha=alpha)], dim=1)
 
+        domain_outputs = nn.Sigmoid()(domain_outputs)
+
         return domain_outputs, class_outputs
 
     def get_parameters(self):

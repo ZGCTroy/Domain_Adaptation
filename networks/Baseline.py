@@ -205,17 +205,18 @@ class ResNet50(nn.Module):
         )
 
         self.bottleneck = nn.Linear(resnet50.fc.in_features, bottleneck_dim)
-        self.bottleneck.apply(init_weights)
+        # self.bottleneck.apply(init_weights)
         self.features_output_size = bottleneck_dim
 
         if use_dropout:
             self.dropout = nn.Dropout(0.25)
 
-        # Class Classifie
-        self.classifier = nn.Sequential(
-            nn.Linear(self.features_output_size, n_classes)
-        )
-        self.classifier.apply(init_weights)
+        # Class Classifier
+        # self.classifier = nn.Sequential(
+        #     nn.Linear(self.features_output_size, n_classes)
+        # )
+        self.classifier = get_large_classifier(self.features_output_size, self.n_classes)
+        # self.classifier.apply(init_weights)
 
     def forward(self, x, get_features=False, get_class_outputs=True):
         if get_features == False and get_class_outputs == False:
