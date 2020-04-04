@@ -31,6 +31,7 @@ class MADA(nn.Module):
                     in_features_size=self.base_model.features_output_size,
                     lr_mult=self.lr_mult,
                     decay_mult=self.decay_mult,
+                    sigmoid=False
                 )
             )
 

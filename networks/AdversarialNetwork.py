@@ -20,7 +20,7 @@ class ReverseLayerF(Function):
 
 
 class AdversarialNetwork(nn.Module):
-    def __init__(self, in_features_size, lr_mult=10, decay_mult=2, out_features_size=1, sigmoid=True):
+    def __init__(self, in_features_size, lr_mult=10, decay_mult=2, out_features_size=1, sigmoid=False):
         super(AdversarialNetwork, self).__init__()
         self.in_features_size = in_features_size
         self.lr_mult = lr_mult

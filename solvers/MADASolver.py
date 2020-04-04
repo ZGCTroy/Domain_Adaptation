@@ -120,8 +120,10 @@ class MADASolver(Solver):
 
             target_inputs = target_inputs.to(self.device)
             target_domain_outputs, target_class_outputs = self.model(target_inputs, alpha=alpha)
-            target_domain_labels = torch.ones((target_labels.size()[0] * self.n_classes, 1), device=self.device)
-            target_domain_loss = nn.BCELoss()(target_domain_outputs.view(-1), target_domain_labels.view(-1))
+            target_domain_loss = nn.BCELoss()(
+                target_domain_outputs.view(-1),
+                torch.ones((target_labels.size()[0] * self.n_classes, 1), device=self.device).view(-1)
+            )
 
             # TODO 2 : Source Train
 

@@ -170,10 +170,9 @@ class MYMADASolver(Solver):
             # TODO 3 : Augment LOSS
             augment_target_inputs = augment_target_inputs.to(self.device)
             augment_target_domain_outputs, augment_target_class_outputs = self.model(augment_target_inputs, alpha=-alpha)
-
             augment_target_class_outputs = nn.Softmax(dim=1)(augment_target_class_outputs)
-            augment_class_loss = self.compute_aug_loss(target_class_outputs, augment_target_class_outputs)
-            augment_loss =  self.rampup_value * augment_class_loss
+            augment_class_loss = self.compute_discrepancy(target_class_outputs, augment_target_class_outputs)
+            # augment_loss =  self.rampup_value * augment_class_loss
 
             augment_loss.backward()
             self.optimizer.step()
@@ -202,7 +201,7 @@ class MYMADASolver(Solver):
 
 
             self.writer.add_scalar('parameters/alpha', alpha, self.iter_num)
-            self.writer.add_scalar('parameters/ramup value', self.rampup_value, self.iter_num)
+            # self.writer.add_scalar('parameters/ramup value', self.rampup_value, self.iter_num)
             self.writer.add_scalar('parameters/loss weight', self.loss_weight, self.iter_num)
 
         acc = source_corrects / total_source_num
@@ -233,15 +232,8 @@ class MYMADASolver(Solver):
 
         return weight.detach() * self.n_classes
 
-    def compute_aug_loss(self, stu_out, tea_out):
-        # stu_out = F.softmax(stu_out, dim=1)
-        # tea_out = F.softmax(tea_out, dim=1)
-
-        d_aug_loss = stu_out - tea_out
-        aug_loss = d_aug_loss * d_aug_loss
-        aug_loss = aug_loss.mean(dim=1)
-
-        return aug_loss.mean()
+    def compute_discrepancy(self, output_t1, output_t2):
+        return torch.mean(torch.abs(output_t1 - output_t2))
 
     def augment(self, x, T=True, A=True):
         # tmp = torch.Tensor(x) + torch.randn_like(x) * 0.1
@@ -252,19 +244,19 @@ class MYMADASolver(Solver):
 
         if self.dataset_type in ['Office31', 'OfficeHome']:
             # hflip
-            theta_hflip = np.random.binomial(1, 0.5, size=(N,)) * 2 - 1
-            theta[:, 0, 0] = theta_hflip.astype(np.float32)
-
-            # scale_u_range
-            scl = np.exp(
-                np.random.uniform(
-                    low=np.log(0.75),
-                    high=np.log(1.33),
-                    size=(N,)
-                )
-            )
-            theta[:, 0, 0] *= scl
-            theta[:, 1, 1] *= scl
+            # theta_hflip = np.random.binomial(1, 0.5, size=(N,)) * 2 - 1
+            # theta[:, 0, 0] = theta_hflip.astype(np.float32)
+            #
+            # # scale_u_range
+            # scl = np.exp(
+            #     np.random.uniform(
+            #         low=np.log(0.75),
+            #         high=np.log(1.33),
+            #         size=(N,)
+            #     )
+            # )
+            # theta[:, 0, 0] *= scl
+            # theta[:, 1, 1] *= scl
             if T:
                 theta[:, :, 2:] += np.random.uniform(low=-0.2, high=0.2, size=(N, 2, 1))
 

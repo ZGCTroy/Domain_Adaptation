@@ -215,7 +215,7 @@ class ResNet50(nn.Module):
         # self.classifier = nn.Sequential(
         #     nn.Linear(self.features_output_size, n_classes)
         # )
-        self.classifier = get_large_classifier(self.features_output_size, self.n_classes)
+        self.classifier = get_small_classifier(self.features_output_size, self.n_classes)
         # self.classifier.apply(init_weights)
 
     def forward(self, x, get_features=False, get_class_outputs=True):
