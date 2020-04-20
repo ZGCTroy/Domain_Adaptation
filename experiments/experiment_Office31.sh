@@ -109,8 +109,8 @@ python3.6 ../main.py --model='MCD' --dataset='Office31' --source='Webcam' --targ
 
 # MYMADA
 
-python3 main.py --model='MY' --dataset='Office31' --source='Amazon' --target='Webcam' \
---cuda='cuda:1' --num_workers=1  --iterations=10004 --test_interval=200 --batch_size=36
+python3 main.py --model='MYMADA' --dataset='Office31' --source='Amazon' --target='Webcam' \
+--cuda='cuda:0' --num_workers=0  --iterations=10004 --test_interval=200 --batch_size=36 --loss_weight=31.0
 
 python3 ../main.py --model='MY' --dataset='Office31' --source='Amazon' --target='Dslr'\
  --cuda='cuda:1' --num_workers=0  --iterations=10004  --test_interval=100 --batch_size=36

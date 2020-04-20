@@ -90,8 +90,8 @@ python3 main.py --model='MADA' --dataset='Digits' --source='USPS' --target='MNIS
 python3 main.py --model='MY' --dataset='Digits' --source='USPS' --target='MNIST' \
 --cuda='cuda:0' --num_workers=0 --epochs=200 --batch_size=256 --test_interval=1 --optimizer='Adam' --loss_weight=1.0
 
-python3 main.py --model='MY' --dataset='Digits' --source='MNIST' --target='USPS' \
---cuda='cuda:0' --num_workers=0 --epochs=200 --batch_size=256 --test_interval=1 --optimizer='Adam' --loss_weight=1.0
+python3 main.py --model='MYMADA' --dataset='Digits' --source='MNIST' --target='USPS' \
+--cuda='cuda:0' --num_workers=0 --epochs=99 --batch_size=256 --test_interval=1 --optimizer='Adam' --loss_weight=10.0
 
 
 python3.6 ../main.py --model='MADA' --dataset='Digits' --source='SVHN' --target='MNIST' \
