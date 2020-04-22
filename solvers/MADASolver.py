@@ -123,7 +123,7 @@ class MADASolver(Solver):
             target_domain_loss = nn.BCELoss()(
                 target_domain_outputs.view(-1),
                 torch.ones((target_labels.size()[0] * self.n_classes, 1), device=self.device).view(-1)
-            )
+            ) * self.loss_weight
 
             # TODO 2 : Source Train
 
@@ -142,12 +142,11 @@ class MADASolver(Solver):
             source_domain_loss = nn.BCELoss()(
                 source_domain_outputs.view(-1),
                 torch.zeros((source_labels.size()[0] * self.n_classes, 1), device=self.device).view(-1)
-            )
+            ) * self.loss_weight
 
             # TODO 3 : LOSS
 
-            loss = self.loss_weight * (
-                    target_domain_loss + source_domain_loss) + source_class_loss
+            loss =  target_domain_loss + source_domain_loss + source_class_loss
 
             loss.backward()
 

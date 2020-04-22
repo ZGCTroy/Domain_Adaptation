@@ -49,7 +49,7 @@ class BaselineSolver(Solver):
 
         self.model = self.model.to(self.device)
 
-    def test(self, data_loader):
+    def test(self, data_loader, projection=False):
         self.model.eval()
 
         total_loss = 0

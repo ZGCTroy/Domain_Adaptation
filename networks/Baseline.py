@@ -20,7 +20,7 @@ def get_small_classifier(in_features_size, n_classes):
     small_classifier = nn.Sequential(
         nn.Linear(in_features_size, 256),
         nn.BatchNorm1d(256),
-        nn.ReLU(),
+        nn.ReLU(inplace=True),
         nn.Linear(256, n_classes),
     )
     return small_classifier
@@ -31,11 +31,11 @@ def get_large_classifier(in_features_size, n_classes):
         nn.Dropout(0.25),
         nn.Linear(in_features_size, 1024),
         nn.BatchNorm1d(1024),
-        nn.ReLU(),
+        nn.ReLU(inplace=True),
         nn.Dropout(0.25),
         nn.Linear(1024, 1024),
         nn.BatchNorm1d(1024),
-        nn.ReLU(),
+        nn.ReLU(inplace=True),
         nn.Linear(1024, n_classes)
     )
 
@@ -54,20 +54,21 @@ class DigitsMU(nn.Module):
         self.feature_extracter = nn.Sequential(
             nn.Conv2d(1, 32, (5, 5)),
             nn.BatchNorm2d(32),
-            nn.ReLU(),
+            nn.ReLU(inplace=True),
             nn.MaxPool2d((2, 2)),
             nn.Conv2d(32, 64, (3, 3)),
             nn.BatchNorm2d(64),
-            nn.ReLU(),
+            nn.ReLU(inplace=True),
             nn.Conv2d(64, 64, (3, 3)),
             nn.BatchNorm2d(64),
-            nn.ReLU(),
+            nn.ReLU(inplace=True),
             nn.MaxPool2d((2, 2)),
         )
+        self.feature_extracter.apply(init_weights)
 
-        self.use_dropout = True
+        self.use_dropout = use_dropout
         if self.use_dropout:
-            self.feature_extracter.add_module(name='dropout', module=nn.Dropout(0.5))
+            self.feature_extracter.add_module(name='dropout', module=nn.Dropout(0.25))
 
         self.features_output_size = 1024
 
@@ -75,6 +76,8 @@ class DigitsMU(nn.Module):
             in_features_size=self.features_output_size,
             n_classes=n_classes
         )
+        self.classifier = nn.Linear(self.features_output_size, n_classes)
+        self.classifier.apply(init_weights)
 
     def forward(self, x, get_features=False, get_class_outputs=True):
         if get_features == False and get_class_outputs == False:
@@ -113,46 +116,46 @@ class DigitsStoM(nn.Module):
         self.feature_extracter = nn.Sequential(
             nn.Conv2d(3, 128, (3, 3), padding=1),
             nn.BatchNorm2d(128),
-            nn.ReLU(),
+            nn.ReLU(inplace=True),
             nn.Conv2d(128, 128, (3, 3), padding=1),
             nn.BatchNorm2d(128),
-            nn.ReLU(),
+            nn.ReLU(inplace=True),
             nn.Conv2d(128, 128, (3, 3), padding=1),
             nn.BatchNorm2d(128),
-            nn.ReLU(),
+            nn.ReLU(inplace=True),
             nn.MaxPool2d((2, 2)),
             nn.Dropout(),
             nn.Conv2d(128, 256, (3, 3), padding=1),
             nn.BatchNorm2d(256),
-            nn.ReLU(),
+            nn.ReLU(inplace=True),
             nn.Conv2d(256, 256, (3, 3), padding=1),
             nn.BatchNorm2d(256),
-            nn.ReLU(),
+            nn.ReLU(inplace=True),
             nn.Conv2d(256, 256, (3, 3), padding=1),
             nn.BatchNorm2d(256),
-            nn.ReLU(),
+            nn.ReLU(inplace=True),
             nn.MaxPool2d((2, 2)),
             nn.Dropout(),
             nn.Conv2d(256, 512, (3, 3), padding=0),
             nn.BatchNorm2d(512),
-            nn.ReLU(),
+            nn.ReLU(inplace=True),
             nn.Conv2d(512, 256, (1, 1), padding=1),
             nn.BatchNorm2d(256),
-            nn.ReLU(),
+            nn.ReLU(inplace=True),
             nn.Conv2d(256, 128, (1, 1), padding=1),
             nn.BatchNorm2d(128),
-            nn.ReLU(),
+            nn.ReLU(inplace=True),
             nn.AvgPool2d((6, 6))
         )
+        # self.feature_extracter.apply(init_weights)
 
         if self.use_dropout:
-            self.feature_extracter.add_module(name='dropout', module=nn.Dropout(0.5))
+            self.feature_extracter.add_module(name='dropout', module=nn.Dropout(0.25))
 
         self.features_output_size = 128
 
-        self.classifier = nn.Sequential(
-            nn.Linear(self.features_output_size, n_classes)
-        )
+        self.classifier = nn.Linear(self.features_output_size, n_classes)
+        # self.classifier.apply(init_weights)
 
     def forward(self, x, get_features=False, get_class_outputs=True):
         if get_features == False and get_class_outputs == False:
@@ -204,7 +207,13 @@ class ResNet50(nn.Module):
             resnet50.avgpool,
         )
 
-        self.bottleneck = nn.Linear(resnet50.fc.in_features, bottleneck_dim)
+        # self.bottleneck = nn.Linear(resnet50.fc.in_features, bottleneck_dim)
+        self.bottleneck = nn.Sequential(
+            nn.Linear(resnet50.fc.in_features, bottleneck_dim),
+            nn.BatchNorm1d(bottleneck_dim),
+            nn.ReLU(inplace=True),
+            nn.Linear(bottleneck_dim, bottleneck_dim)
+        )
         # self.bottleneck.apply(init_weights)
         self.features_output_size = bottleneck_dim
 

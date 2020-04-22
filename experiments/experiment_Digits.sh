@@ -5,7 +5,7 @@
 python3.6 ../main.py --model='Baseline' --dataset='Digits' --source='USPS' --target='MNIST' --cuda='cuda:0' --num_workers=0 --epochs=300 --batch_size=256 --test_interval=1 --optimizer='Adam'
 
 python3 main.py --model='Baseline' --dataset='Digits' --source='MNIST' --target='USPS' \
---cuda='cuda:0' --num_workers=0 --epochs=300 --batch_size=256 --test_interval=1 --optimizer='Adam'
+--cuda='cuda:0' --num_workers=0 --epochs=99 --batch_size=256 --test_interval=1 --optimizer='Adam'
 
 python3.6 ../main.py --model='Baseline' --dataset='Digits' --source='SVHN' --target='MNIST' \
 --cuda='cuda:0' --num_workers=0 --epochs=300 --batch_size=256 --test_interval=1 --optimizer='Adam'

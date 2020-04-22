@@ -36,7 +36,7 @@ class MYMADASolver(Solver):
             data_root_dir=data_root_dir
         )
 
-        self.model_name = 'MYMADA'
+        self.model_name = 'MYMADA_LossWeight10.0_BCEWeight_noEntropyWeight_noTargetClassLoss'
         self.iter_num = 0
         self.class_weight = None
         self.loss_weight = loss_weight
@@ -45,6 +45,7 @@ class MYMADASolver(Solver):
         self.rampup_value = 1.0
         self.class_struct = None
         self.class_struct_first = None
+        self.beta = 0.99
 
     def get_alpha(self, delta=10.0):
         if self.num_epochs != 999999:
@@ -70,6 +71,7 @@ class MYMADASolver(Solver):
         self.model = self.model.to(self.device)
         self.class_struct = [torch.zeros(size=(self.n_classes,),device=self.device) for i in range(self.n_classes)]
         self.class_struct_first = [True for i in range(self.n_classes)]
+
     def test(self, data_loader, projection=False):
         model = self.model
         model.eval()
@@ -102,16 +104,14 @@ class MYMADASolver(Solver):
 
     def update_class_struct(self, source_class_outputs, alpha=0.9):
         # input: batch_size * n_classes
+        alpha = self.beta
         source_soft_labels = torch.argmax(source_class_outputs.detach(), 1).detach()
         for i in range(source_class_outputs.size()[0]):
             label = source_soft_labels[i]
             self.class_struct[label] = self.class_struct[label]*alpha + (1-alpha)*source_class_outputs[i]
 
         for i in range(self.n_classes):
-            self.class_struct[i] = nn.Softmax(dim=0)(self.class_struct[i])
-
-
-
+            self.class_struct[i] = self.class_struct[i] / torch.sum(self.class_struct[i])
 
     def train_one_epoch(self):
         since = time.time()
@@ -130,7 +130,6 @@ class MYMADASolver(Solver):
         augment_loss = 0
         first = True
 
-        print(self.class_struct)
         for target_inputs, target_labels in self.data_loader['target']['train']:
             sys.stdout.write('\r{}/{}'.format(processed_target_num, total_target_num))
             sys.stdout.flush()
@@ -153,15 +152,14 @@ class MYMADASolver(Solver):
             source_class_loss = nn.CrossEntropyLoss()(source_class_outputs, source_labels)
             source_class_outputs = nn.Softmax(dim=1)(source_class_outputs)
 
-            self.update_class_struct(source_class_outputs.detach())
+            # self.update_class_struct(source_class_outputs.detach())
             source_weight = self.get_weight(source_class_outputs, h=False)
-
             source_domain_loss = nn.BCELoss(weight=source_weight)(
                 source_domain_outputs.view(-1),
                 torch.zeros((batch_size * self.n_classes,),device=self.device)
-            )
+            ) * self.loss_weight
 
-            source_loss = source_class_loss + self.loss_weight * source_domain_loss
+            source_loss = source_class_loss + source_domain_loss
             source_loss.backward(retain_graph=True)
             self.optimizer.step()
             self.optimizer.zero_grad()
@@ -174,48 +172,32 @@ class MYMADASolver(Solver):
 
             target_domain_outputs, target_class_outputs = self.model(target_inputs, alpha=alpha)
             target_class_outputs = nn.Softmax(dim=1)(target_class_outputs)
-
             target_weight = self.get_weight(target_class_outputs, h=False)
             target_domain_loss = nn.BCELoss(weight=target_weight)(
                 target_domain_outputs.view(-1),
                 torch.ones((batch_size * self.n_classes,),device=self.device)
-            )
+            ) * self.loss_weight
 
-            target_soft_label = torch.argmax(target_class_outputs, 1)
-            target_max_value, _ = torch.max(target_class_outputs, 1)
-
-            first = True
-            for label in target_soft_label:
-                if first:
-                    class_struct = self.class_struct[label].view(1,-1)
-                    first=False
-                else:
-                    class_struct = torch.cat([class_struct.detach(), self.class_struct[label].view(1,-1)], dim=0)
-            target_class_outputs = torch.log(target_class_outputs)
-            target_class_loss = torch.sum(torch.mul(target_class_outputs, class_struct.detach()), dim=1)
-            target_class_loss = -torch.mean(target_class_loss)
-            # target_class_loss = -torch.mean(torch.mul(target_class_loss, target_max_value))
-
-            target_loss = target_class_loss + self.loss_weight * target_domain_loss
+            # target_soft_label = torch.argmax(target_class_outputs, 1)
+            # target_max_value, _ = torch.max(target_class_outputs, 1)
+            #
+            # first = True
+            # for label in target_soft_label:
+            #     if first:
+            #         class_struct = self.class_struct[label].view(1,-1)
+            #         first=False
+            #     else:
+            #         class_struct = torch.cat([class_struct.detach(), self.class_struct[label].view(1,-1)], dim=0)
+            # target_class_outputs = torch.log(target_class_outputs)
+            # target_class_loss = torch.sum(torch.mul(target_class_outputs, class_struct.detach()), dim=1)
+            # # target_class_loss = -torch.mean(target_class_loss)
+            # target_class_loss = -torch.mean(torch.mul(target_class_loss, target_max_value.detach()))
+            target_class_loss = 0
+            target_loss = target_class_loss + target_domain_loss
 
             target_loss.backward(retain_graph=True)
             self.optimizer.step()
             self.optimizer.zero_grad()
-
-            # TODO 3 : Augment LOSS
-            # augment_target_inputs = augment_target_inputs.to(self.device)
-            # augment_target_domain_outputs, augment_target_class_outputs = self.model(augment_target_inputs, alpha=-alpha)
-            # augment_target_class_outputs = nn.Softmax(dim=1)(augment_target_class_outputs)
-            # augment_class_loss = self.compute_discrepancy(target_class_outputs, augment_target_class_outputs)
-            # # augment_loss =  self.rampup_value * augment_class_loss
-            #
-            # augment_loss.backward()
-            # self.optimizer.step()
-            # self.optimizer.zero_grad()
-
-
-
-            # TODO 4 : Augment Loss
             loss= source_loss + target_loss
 
             # TODO 5 : other parameters
@@ -246,6 +228,7 @@ class MYMADASolver(Solver):
 
 
             self.writer.add_scalar('parameters/alpha', alpha, self.iter_num)
+            self.writer.add_scalar('parameters/beta', self.beta, self.iter_num)
             # self.writer.add_scalar('parameters/ramup value', self.rampup_value, self.iter_num)
             self.writer.add_scalar('parameters/loss weight', self.loss_weight, self.iter_num)
 
