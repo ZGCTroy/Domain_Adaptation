@@ -6,18 +6,17 @@ import time
 import torch.nn as nn
 
 from data_helpers.data_helper import *
-from networks.MYMADA import MYMADA
+from networks.oldMyMADA import oldMyMADA
 from solvers.Solver import Solver
 import torch.nn.functional as F
 
 
-class MYMADASolver(Solver):
+class oldMyMADASolver(Solver):
     def __init__(self, dataset_type, source_domain, target_domain, cuda='cuda:0',
-                 pretrained=False,
                  batch_size=32,
                  num_epochs=9999, max_iter_num=9999999, test_interval=500, test_mode=False, num_workers=2,
                  clean_log=False, lr=0.001, gamma=10, optimizer_type='SGD', loss_weight=1.0, data_root_dir='./data'):
-        super(MYMADASolver, self).__init__(
+        super(oldMyMADASolver, self).__init__(
             dataset_type=dataset_type,
             source_domain=source_domain,
             target_domain=target_domain,
@@ -36,7 +35,7 @@ class MYMADASolver(Solver):
             data_root_dir=data_root_dir
         )
 
-        self.model_name = 'MYMADA_LossWeight10.0_BCEWeight_noEntropy_TargetClassLoss_-+'
+        self.model_name = 'oldMyMADA_LossWeight10.0_BCEWeight_noEntropy_TargetClassLoss_-+'
         self.iter_num = 0
         self.class_weight = None
         self.loss_weight = loss_weight
@@ -60,12 +59,12 @@ class MYMADASolver(Solver):
     def set_model(self):
         if self.dataset_type == 'Digits':
             if self.task in ['MtoU', 'UtoM']:
-                self.model = MYMADA(n_classes=self.n_classes, base_model='DigitsMU')
+                self.model = oldMyMADA(n_classes=self.n_classes, base_model='DigitsMU')
             if self.task in ['StoM']:
-                self.model = MYMADA(n_classes=self.n_classes, base_model='DigitsStoM')
+                self.model = oldMyMADA(n_classes=self.n_classes, base_model='DigitsStoM')
 
         if self.dataset_type in ['Office31', 'OfficeHome']:
-            self.model = MYMADA(n_classes=self.n_classes, base_model='ResNet50')
+            self.model = oldMyMADA(n_classes=self.n_classes, base_model='ResNet50')
 
         if self.pretrained:
             self.load_model(path=self.models_checkpoints_dir + '/' + self.model_name + '_best_train.pt')

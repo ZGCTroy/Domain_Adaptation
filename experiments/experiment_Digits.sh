@@ -98,6 +98,21 @@ python3.6 ../main.py --model='MADA' --dataset='Digits' --source='SVHN' --target=
 --cuda='cuda:0' --num_workers=0 --epochs=200 --batch_size=256 --test_interval=1 --optimizer='Adam' --loss_weight=0.5
 
 
+# CycleMADA
+
+python3 main.py --model='CycleMADA' --dataset='Digits' --source='USPS' --target='MNIST' \
+--cuda='cuda:2' --num_workers=0 --epochs=200 --batch_size=256 --test_interval=1 --optimizer='Adam' --loss_weight=0.5
+
+python3 main.py --model='CycleMADA' --dataset='Digits' --source='USPS' --target='MNIST' \
+--cuda='cuda:0' --num_workers=0 --epochs=200 --batch_size=256 --test_interval=1 --optimizer='Adam' --loss_weight=1.0
+
+python3 main.py --model='CycleMADA' --dataset='Digits' --source='MNIST' --target='USPS' \
+--cuda='cuda:0' --num_workers=0 --epochs=99 --batch_size=256 --test_interval=1 --optimizer='Adam' --loss_weight=1.0
+
+
+python3.6 ../main.py --model='CycleMADA' --dataset='Digits' --source='SVHN' --target='MNIST' \
+--cuda='cuda:0' --num_workers=0 --epochs=200 --batch_size=256 --test_interval=1 --optimizer='Adam' --loss_weight=0.5
+
 
 
 

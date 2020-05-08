@@ -2,9 +2,9 @@ from networks.AdversarialNetwork import AdversarialNetwork
 from networks.Baseline import *
 
 
-class MYMADA(nn.Module):
+class CycleMADA(nn.Module):
     def __init__(self, n_classes, base_model, pretrained=True):
-        super(MYMADA, self).__init__()
+        super(CycleMADA, self).__init__()
 
         self.n_classes = n_classes
         self.pretrained = pretrained
@@ -37,20 +37,14 @@ class MYMADA(nn.Module):
             nn.Linear(128, self.n_classes)
         )
 
-
     def forward(self, x, alpha=1.0, is_source=True, test_mode=False):
-        if test_mode:
-            class_outputs = self.base_model(x, get_features=False, get_class_outputs=True)
-            if is_source:
-                class_outputs = class_outputs + self.RTN(class_outputs)
-            return class_outputs
-
         features, class_outputs = self.base_model(x, get_features=True, get_class_outputs=True)
 
-        if is_source:
-            class_outputs = class_outputs + self.RTN(class_outputs)
-
         domain_outputs = self.domain_classifier(features, alpha=alpha)
+        class_outputs = class_outputs + self.RTN(class_outputs * domain_outputs.detach())
+
+        if test_mode:
+            return class_outputs
 
         return domain_outputs, class_outputs
 
@@ -63,10 +57,16 @@ class MYMADA(nn.Module):
         return parameters
 
     def get_classifier_parameters(self):
-        parameters = self.base_model.get_classifier_parameters()
+        parameters = self.base_model.get_classifier_parameters() + self.get_RTN_parameters()
         return parameters
 
     def get_discriminator_parameters(self):
         parameters = self.domain_classifier.get_parameters()
+        return parameters
+
+    def get_RTN_parameters(self):
+        parameters = [
+            {'params': self.RTN.parameters(), 'lr_mult': self.lr_mult, 'decay_mult': self.decay_mult},
+        ]
         return parameters
 

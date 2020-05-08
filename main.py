@@ -10,7 +10,8 @@ from solvers.MADASolver import MADASolver
 from solvers.MCDSolver import MCDSolver
 from solvers.MYMCDSolver import MYMCDSolver
 from solvers.MTSolver import MTSolver
-from solvers.MYMADASolver import MYMADASolver
+from solvers.RTNMADA import RTNMADASolver
+from solvers.CycleMADA import CycleMADASolver
 
 print(os.getcwd())
 os.chdir(os.getcwd())
@@ -57,8 +58,28 @@ def main():
 
     solver = None
 
-    if args.model == 'MYMADA':
-        solver = MYMADASolver(
+    if args.model == 'RTNMADA':
+        solver = RTNMADASolver(
+            dataset_type=args.dataset,
+            source_domain=args.source,
+            target_domain=args.target,
+            cuda=args.cuda,
+            pretrained=args.pretrained,
+            test_mode=args.test_mode,
+            batch_size=args.batch_size,
+            num_epochs=args.epochs,
+            test_interval=args.test_interval,
+            max_iter_num=args.iterations,
+            num_workers=args.num_workers,
+            lr=args.lr,
+            gamma=args.gamma,
+            optimizer_type=args.optimizer,
+            loss_weight=args.loss_weight,
+            data_root_dir = args.data_root_dir
+        )
+
+    if args.model == 'CycleMADA':
+        solver = CycleMADASolver(
             dataset_type=args.dataset,
             source_domain=args.source,
             target_domain=args.target,

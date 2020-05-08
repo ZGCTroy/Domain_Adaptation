@@ -64,20 +64,19 @@ class DigitsMU(nn.Module):
             nn.ReLU(inplace=True),
             nn.MaxPool2d((2, 2)),
         )
-        self.feature_extracter.apply(init_weights)
+        # self.feature_extracter.apply(init_weights)
 
-        self.use_dropout = use_dropout
         if self.use_dropout:
             self.feature_extracter.add_module(name='dropout', module=nn.Dropout(0.25))
 
         self.features_output_size = 1024
 
-        self.classifier = get_small_classifier(
-            in_features_size=self.features_output_size,
-            n_classes=n_classes
-        )
+        # self.classifier = get_small_classifier(
+        #     in_features_size=self.features_output_size,
+        #     n_classes=n_classes
+        # )
         self.classifier = nn.Linear(self.features_output_size, n_classes)
-        self.classifier.apply(init_weights)
+        # self.classifier.apply(init_weights)
 
     def forward(self, x, get_features=False, get_class_outputs=True):
         if get_features == False and get_class_outputs == False:
@@ -101,6 +100,16 @@ class DigitsMU(nn.Module):
     def get_parameters(self):
         return [
             {'params': self.feature_extracter.parameters(), 'lr_mult': 1, 'decay_mult': 1},
+            {'params': self.classifier.parameters(), 'lr_mult': 1, 'decay_mult': 1}
+        ]
+
+    def get_generator_parameters(self):
+        return [
+            {'params': self.feature_extracter.parameters(), 'lr_mult': 1, 'decay_mult': 1}
+        ]
+
+    def get_classifier_parameters(self):
+        return [
             {'params': self.classifier.parameters(), 'lr_mult': 1, 'decay_mult': 1}
         ]
 
