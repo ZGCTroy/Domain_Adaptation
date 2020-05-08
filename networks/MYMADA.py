@@ -32,18 +32,41 @@ class MYMADA(nn.Module):
             sigmoid=True
         )
 
-    def forward(self, x, alpha=1.0, test_mode=False):
+        self.RTN = nn.Sequential(
+            nn.Linear(self.n_classes, 128),
+            nn.Linear(128, self.n_classes)
+        )
+
+
+    def forward(self, x, alpha=1.0, is_source=True, test_mode=False):
         if test_mode:
             class_outputs = self.base_model(x, get_features=False, get_class_outputs=True)
+            if is_source:
+                class_outputs = class_outputs + self.RTN(class_outputs)
             return class_outputs
 
         features, class_outputs = self.base_model(x, get_features=True, get_class_outputs=True)
+
+        if is_source:
+            class_outputs = class_outputs + self.RTN(class_outputs)
 
         domain_outputs = self.domain_classifier(features, alpha=alpha)
 
         return domain_outputs, class_outputs
 
     def get_parameters(self):
-        parameters = self.base_model.get_parameters() + self.domain_classifier.get_parameters()
+        parameters = self.get_generator_parameters() + self.get_classifier_parameters() + self.get_discriminator_parameters()
+        return parameters
+
+    def get_generator_parameters(self):
+        parameters = self.base_model.get_generator_parameters()
+        return parameters
+
+    def get_classifier_parameters(self):
+        parameters = self.base_model.get_classifier_parameters()
+        return parameters
+
+    def get_discriminator_parameters(self):
+        parameters = self.domain_classifier.get_parameters()
         return parameters
 

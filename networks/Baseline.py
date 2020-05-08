@@ -207,13 +207,13 @@ class ResNet50(nn.Module):
             resnet50.avgpool,
         )
 
-        # self.bottleneck = nn.Linear(resnet50.fc.in_features, bottleneck_dim)
-        self.bottleneck = nn.Sequential(
-            nn.Linear(resnet50.fc.in_features, bottleneck_dim),
-            nn.BatchNorm1d(bottleneck_dim),
-            nn.ReLU(inplace=True),
-            nn.Linear(bottleneck_dim, bottleneck_dim)
-        )
+        self.bottleneck = nn.Linear(resnet50.fc.in_features, bottleneck_dim)
+        # self.bottleneck = nn.Sequential(
+        #     nn.Linear(resnet50.fc.in_features, bottleneck_dim),
+        #     nn.BatchNorm1d(bottleneck_dim),
+        #     nn.ReLU(inplace=True),
+        #     nn.Linear(bottleneck_dim, bottleneck_dim)
+        # )
         # self.bottleneck.apply(init_weights)
         self.features_output_size = bottleneck_dim
 
@@ -221,10 +221,10 @@ class ResNet50(nn.Module):
             self.dropout = nn.Dropout(0.25)
 
         # Class Classifier
-        # self.classifier = nn.Sequential(
-        #     nn.Linear(self.features_output_size, n_classes)
-        # )
-        self.classifier = get_small_classifier(self.features_output_size, self.n_classes)
+        self.classifier = nn.Sequential(
+            nn.Linear(self.features_output_size, n_classes)
+        )
+        # self.classifier = get_small_classifier(self.features_output_size, self.n_classes)
         # self.classifier.apply(init_weights)
 
     def forward(self, x, get_features=False, get_class_outputs=True):
@@ -255,3 +255,19 @@ class ResNet50(nn.Module):
         ]
 
         return parameters
+
+    def get_generator_parameters(self):
+        parameters = [
+            {'params': self.feature_extracter.parameters(), 'lr_mult': 1, 'decay_mult': 1},
+            {'params': self.bottleneck.parameters(), 'lr_mult': 10, 'decay_mult': 2},
+        ]
+
+        return parameters
+
+    def get_classifier_parameters(self):
+        parameters = [
+            {'params': self.classifier.parameters(), 'lr_mult': 10, 'decay_mult': 2},
+        ]
+
+        return parameters
+

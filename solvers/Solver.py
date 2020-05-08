@@ -78,7 +78,7 @@ class Solver():
         self.optimizer_type = optimizer_type
         self.writer = None
 
-    def test(self, data_loader):
+    def test(self, data_loader, is_source=True, projection=False):
         raise NotImplementedError
 
     def train_one_epoch(self):
@@ -92,6 +92,7 @@ class Solver():
 
         best_val_loss, best_val_acc = self.test(
             data_loader=self.data_loader['source']['test'],
+            is_source=True,
             projection=False
         )
 
@@ -100,6 +101,7 @@ class Solver():
 
         best_test_loss, best_test_acc = self.test(
             data_loader=self.data_loader['target']['test'],
+            is_source=False,
             projection=True
         )
         print('Initial Test Loss: {:.4f} Acc: {:.4f}\n'.format(best_test_loss, best_test_acc))
@@ -125,7 +127,11 @@ class Solver():
             val_acc = val_loss = 0
             if self.dataset_type == 'Digits':
 
-                val_loss, val_acc = self.test(data_loader=self.data_loader['source']['test'],projection=False)
+                val_loss, val_acc = self.test(
+                    data_loader=self.data_loader['source']['test'],
+                    is_source=True,
+                    projection=False
+                )
                 print('Val Loss: {:.4f} Acc: {:.4f}\n'.format(val_loss, val_acc))
 
                 if val_acc >= best_val_acc:
@@ -136,7 +142,11 @@ class Solver():
             # TODO 3 : Test
             if self.iter_num - log_iter >= self.test_interval:
                 log_iter = self.iter_num
-                test_loss, test_acc = self.test(data_loader=self.data_loader['target']['test'],projection=True)
+                test_loss, test_acc = self.test(
+                    data_loader=self.data_loader['target']['test'],
+                    is_source=False,
+                    projection=True
+                )
 
                 print('Test Loss: {:.4f} Acc: {:.4f}\n'.format(test_loss, test_acc))
 
