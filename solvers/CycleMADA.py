@@ -42,7 +42,8 @@ class CycleMADASolver(Solver):
         self.confidence_thresh = 0.97
         self.beta = 0.99
         self.targetClassLossWeight = 1.0
-        self.model_name = 'CycleMADA_'+'_BCEWeight_noEntropy_'+'LossWeight'+str(self.loss_weight)+'_detach'
+        self.model_name = 'CycleMADA_' + '_BCEWeight_noEntropy_' + 'LossWeight' + str(self.loss_weight) + '_detach'
+        self.model_name = 'CyCleMADA_[x+RTN(x+d)]_noEntropy_noRTNmode_withTargetClass'
 
     def get_alpha(self, delta=10.0):
         if self.num_epochs != 999999:
@@ -172,12 +173,13 @@ class CycleMADASolver(Solver):
             source_class_outputs = nn.Softmax(dim=1)(source_class_outputs)
 
             source_weight = self.get_weight(source_class_outputs.detach(), h=False)
-            source_domain_loss = nn.BCELoss(weight=source_weight)(
+            source_domain_loss = nn.BCELoss(weight=source_weight.detach())(
                 source_domain_outputs.view(-1),
                 torch.zeros((batch_size * self.n_classes,), device=self.device)
-            ) * self.loss_weight
+            ) * self.n_classes * self.loss_weight
 
             source_loss = source_class_loss + source_domain_loss
+
             source_loss.backward(retain_graph=True)
             self.optimizer.step()
             self.optimizer.zero_grad()
@@ -186,44 +188,25 @@ class CycleMADASolver(Solver):
             target_inputs = target_inputs.to(self.device)
             batch_size = target_inputs.size()[0]
             target_domain_outputs, target_class_outputs = self.model(target_inputs, alpha=alpha, is_source=False)
+
+            target_soft_labels = torch.argmax(target_class_outputs, 1).detach()
+            target_class_loss = nn.CrossEntropyLoss()(target_class_outputs, target_soft_labels)
+
             target_class_outputs = nn.Softmax(dim=1)(target_class_outputs)
             target_weight = self.get_weight(target_class_outputs.detach(), h=False)
-            target_domain_loss = nn.BCELoss(weight=target_weight)(
+            target_domain_loss = nn.BCELoss(weight=target_weight.detach())(
                 target_domain_outputs.view(-1),
                 torch.ones((batch_size * self.n_classes,), device=self.device)
-            ) * self.loss_weight
+            ) * self.n_classes * self.loss_weight
 
-            target_domain_loss.backward(retain_graph=True)
+            # target_class_loss = self.cal_entropy_loss(target_class_outputs)
+            # target_class_loss = 0
+            beta = alpha * 0.5
+            target_loss = beta * target_class_loss + target_domain_loss
+
+            target_loss.backward(retain_graph=True)
             self.optimizer.step()
             self.optimizer.zero_grad()
-
-            # TODO 3: Target Class Loss
-            # target_soft_label = torch.argmax(target_class_outputs, 1)
-            # target_max_value, _ = torch.max(target_class_outputs, 1)
-            #
-            # first = True
-            # for label in target_soft_label:
-            #     if first:
-            #         class_struct = self.class_struct2[label].view(1, -1)
-            #         first = False
-            #     else:
-            #         class_struct = torch.cat([class_struct.detach(), self.class_struct2[label].view(1, -1)], dim=0)
-            # target_class_outputs = torch.log(target_class_outputs)
-            # target_class_loss = torch.sum(torch.mul(target_class_outputs, class_struct.detach()), dim=1)
-            # # target_class_loss = -torch.mean(target_class_loss)
-            # target_class_loss = -torch.mean(
-            #     torch.mul(target_class_loss, target_max_value.detach())) * self.targetClassLossWeight
-            # # target_class_loss = 0
-            #
-            # target_class_loss.backward(retain_graph=True)
-            # self.optimizer.step()
-            # target_class_loss = -target_class_loss
-            # target_class_loss.backward(retain_graph=True)
-            # self.generator_optimizer.step()
-            # self.generator_optimizer.zero_grad()
-            # self.optimizer.zero_grad()
-            # self.classifier_optimizer.zero_grad()
-            target_class_loss = 0
 
             # TODO 5 : other parameters
             target_loss = target_class_loss + target_domain_loss
@@ -251,7 +234,7 @@ class CycleMADASolver(Solver):
             }, self.iter_num
                                     )
 
-
+            self.writer.add_scalar('parameters/beta', beta, self.iter_num)
             self.writer.add_scalar('parameters/alpha', alpha, self.iter_num)
             self.writer.add_scalar('parameters/Domain loss weight', self.loss_weight, self.iter_num)
             self.writer.add_scalar('parameters/target class loss weight', self.targetClassLossWeight, self.iter_num)
@@ -283,4 +266,12 @@ class CycleMADASolver(Solver):
             weight = x.view(-1)
 
         return weight.detach()
+
+    def cal_entropy_loss(self, x):
+        epsilon = 1e-5
+        entropy_loss = -x * torch.log(x + epsilon)
+        entropy_loss = torch.sum(entropy_loss, dim=1).view(-1)
+        entropy_loss = torch.mean(entropy_loss)
+
+        return entropy_loss
 

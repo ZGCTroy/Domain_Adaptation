@@ -36,12 +36,19 @@ class CycleMADA(nn.Module):
             nn.Linear(self.n_classes, 128),
             nn.Linear(128, self.n_classes)
         )
+        self.RTN1 = nn.Linear(self.n_classes, 128)
+        self.RTN2 = nn.Linear(self.n_classes, 128)
+        self.RTN3 = nn.Linear(128, self.n_classes)
 
     def forward(self, x, alpha=1.0, is_source=True, test_mode=False):
         features, class_outputs = self.base_model(x, get_features=True, get_class_outputs=True)
 
         domain_outputs = self.domain_classifier(features, alpha=alpha)
-        class_outputs = class_outputs + self.RTN(class_outputs * domain_outputs.detach())
+
+        class_outputs = self.RTN3(
+            self.RTN1(class_outputs)+self.RTN2(domain_outputs.detach())
+        )
+        # class_outputs = self.RTN(class_outputs * domain_outputs.detach())
 
         if test_mode:
             return class_outputs
@@ -67,6 +74,9 @@ class CycleMADA(nn.Module):
     def get_RTN_parameters(self):
         parameters = [
             {'params': self.RTN.parameters(), 'lr_mult': self.lr_mult, 'decay_mult': self.decay_mult},
+            {'params': self.RTN1.parameters(), 'lr_mult': self.lr_mult, 'decay_mult': self.decay_mult},
+            {'params': self.RTN2.parameters(), 'lr_mult': self.lr_mult, 'decay_mult': self.decay_mult},
+            {'params': self.RTN3.parameters(), 'lr_mult': self.lr_mult, 'decay_mult': self.decay_mult},
         ]
         return parameters
 
